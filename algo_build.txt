@@ -1,0 +1,7 @@
+Built: /global/u1/e/egencer/scratch/coll_evolve/ir_compile/torchcomms-sparse/msccl_algo_naive_ring_8gpus_1KB.so
+
+Use with:
+  MSCCL_ALGO_PATH=/global/u1/e/egencer/scratch/coll_evolve/ir_compile/torchcomms-sparse/msccl_algo_naive_ring_8gpus_1KB.so \
+  LD_PRELOAD=/global/u1/e/egencer/scratch/coll_evolve/ir_compile/torchcomms-sparse/ncclmsccl_preload.so \
+  LD_LIBRARY_PATH=/global/u1/e/egencer/scratch/coll_evolve/ir_compile/torchcomms-sparse/build/ncclx/lib:$LD_LIBRARY_PATH \
+  srun ... ./all_reduce_perf ...

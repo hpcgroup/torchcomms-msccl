@@ -125,6 +125,7 @@ SRCS += ${BASE_DIR}/comms/ctran/algos/RMA/PutSignal.cu
 SRCS += ${BASE_DIR}/comms/ctran/algos/RMA/Get.cu
 SRCS += ${BASE_DIR}/comms/ctran/algos/DevShmState.cu
 SRCS += all_reduce_sparse_block.cu
+SRCS += msccl_kernel.cu
 
 -include $(OBJDIR)/gensrc/ctran_rules.mk
 SRCS += $(CTRAN_GEN_SRCS)
@@ -162,3 +163,4 @@ $(MANIFEST): $(LIB_OBJS) $(DEVGLUE_OBJ)
 .PHONY: clean
 clean:
 	rm -rf $(OBJDIR)
+SRCS += msccl_algo_naive_ring_8gpus_1KB.cu

@@ -9,6 +9,7 @@
 #include "enqueue.h"
 #include "nccl.h"
 #include "nvtx_payload_schemas.h"
+#include "msccl_engine_host.h"
 
 #include "comms/ctran/Ctran.h"
 #include "meta/algoconf/AlgoConfig.h"
@@ -235,6 +236,14 @@ ncclResult_t ncclReduceScatter(const void* sendbuff, void* recvbuff, size_t recv
   }
 
   return ncclEnqueueCheck(&info);
+}
+
+NCCL_API(ncclResult_t, ncclAllReduceMsccl,
+    const void* sendbuff, void* recvbuff, size_t count,
+    ncclDataType_t datatype, ncclRedOp_t op, ncclComm* comm, cudaStream_t stream);
+ncclResult_t ncclAllReduceMsccl(const void* sendbuff, void* recvbuff, size_t count,
+    ncclDataType_t datatype, ncclRedOp_t op, ncclComm* comm, cudaStream_t stream) {
+  return ncclAllReduceMscclImpl(sendbuff, recvbuff, count, datatype, op, comm, stream);
 }
 
 NCCL_API(ncclResult_t, ncclScatter, const void* sendbuff, void* recvbuff, size_t count,

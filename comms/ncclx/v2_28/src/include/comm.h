@@ -24,6 +24,8 @@
 
 #include <optional>
 
+struct mscclEngineState; /* defined in msccl_engine_host.h */
+
 #include "comms/ctran/CtranComm.h"
 #include "comms/utils/colltrace/AlgoStats.h"
 #include "comms/utils/colltrace/CollTraceInterface.h"
@@ -743,6 +745,8 @@ struct ncclComm {
   // [META:PAT_AVG] per-communicator control; set at init entry functions
   // When enabled, forces PAT algorithm with ncclDevPatSumPostDiv for ReduceScatter with ncclAvg
   bool usePatAvg_{false};
+
+  struct mscclEngineState *mscclEngine{nullptr};
 
   uint64_t endMagic;
 };

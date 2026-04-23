@@ -2856,3 +2856,8 @@ cvars:
    type        : int
    default     : 8
    description : https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html#nccl-p2p-schedule-group-size
+
+ - name        : NCCL_MSCCL_MAX_CHANNELS
+   type        : int
+   default     : 16
+   description : Maximum number of channels to initialize for MSCCL algorithms.

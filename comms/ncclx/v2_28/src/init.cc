@@ -5,6 +5,8 @@
  ************************************************************************/
 
 #include "nccl.h"
+#include "msccl_engine_host.h"
+#include "msccl_registry.h"
 #include "channel.h"
 #include "nvmlwrap.h"
 #include "gdrwrap.h"
@@ -263,6 +265,7 @@ static void ncclxCommFree(ncclComm_t comm) {
   if (comm->config.ncclAllGatherAlgo) {
     free((void*)comm->config.ncclAllGatherAlgo);
   }
+  ncclMscclEngineFree(comm);
 }
 
 static ncclResult_t commFree(ncclComm_t comm) {
@@ -1394,6 +1397,7 @@ static ncclResult_t initTransportsRank(struct ncclComm* comm, struct ncclComm* p
     for (int c=0; c<comm->nChannels; c++) {
       NCCLCHECKGOTO(setupChannel(comm, c, rank, nranks, rings+c*nranks), ret, fail);
     }
+    NCCLCHECKGOTO(ncclTransportMscclConnect(comm), ret, fail);
     // Attempt to setup NVLS, may silently fail and disable NVLS
     NCCLCHECKGOTO(ncclNvlsSetup(comm, parent), ret, fail);
     // Check if we can setup CollNet
@@ -1409,6 +1413,9 @@ static ncclResult_t initTransportsRank(struct ncclComm* comm, struct ncclComm* p
 
     // Connect PAT only for communicators with 1 GPU per node
     if (comm->maxLocalRanks == 1) NCCLCHECKGOTO(ncclTransportPatConnect(comm), ret, fail);
+
+    // Connect all rank pairs for MSCCL engine (arbitrary peer topology)
+    NCCLCHECKGOTO(ncclTransportMscclConnect(comm), ret, fail);
 
     // Attempt to setup NVLS, may silently fail and disable NVLS
     NCCLCHECKGOTO(ncclNvlsSetup(comm, parent), ret, fail);
@@ -1751,6 +1758,9 @@ static ncclResult_t ncclCommInitRankFunc(struct ncclAsyncJob* job_) {
   // update communicator state
   comm->initState = ncclSuccess;
   timers[TIMER_INIT_TOTAL] = clockNano() - timers[TIMER_INIT_TOTAL];
+
+  // Load any registered MSCCL algorithms matching this communicator's nRanks.
+  NCCLCHECKGOTO(ncclMscclAutoLoad(comm), res, fail);
 
   /**
    * NCCLX - Specific Initialization

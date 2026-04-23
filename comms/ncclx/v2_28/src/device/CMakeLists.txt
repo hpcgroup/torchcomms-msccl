@@ -40,6 +40,7 @@ add_library(nccl_device OBJECT
             ${symmetric_files}
             ${CMAKE_CURRENT_SOURCE_DIR}/common.cu
             ${CMAKE_CURRENT_SOURCE_DIR}/onerank.cu
+            ${CMAKE_CURRENT_SOURCE_DIR}/msccl_kernel.cu
 )
 
 set_target_properties(nccl_device PROPERTIES

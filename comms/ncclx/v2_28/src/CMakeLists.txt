@@ -15,6 +15,8 @@ set(LIBSRCFILES
     allocator.cc
     sym_kernels.cc
     dev_runtime.cc
+    msccl_registry.cc
+    msccl_engine_host.cc
 )
 
 # Add compatibility shim if using static cudart

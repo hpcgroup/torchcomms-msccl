@@ -7,6 +7,9 @@
 #include "comm.h"
 #include "transport.h"
 #include "bootstrap.h"
+#include "channel.h"
+#include "param.h"
+#include <algorithm>
 
 #include "meta/transport/transportConnect.h"
 
@@ -90,6 +93,42 @@ ncclResult_t ncclTransportPatConnect(struct ncclComm* comm) {
       NCCLCHECKGOTO(ncclTransportP2pSetup(comm, &comm->graphs[NCCL_ALGO_TREE], 0), ret, fail);
     }
     INFO(NCCL_INIT, "Connected binomial trees");
+  }
+exit:
+  return ret;
+fail:
+  goto exit;
+}
+
+NCCL_PARAM(MscclMaxChannels, "MSCCL_MAX_CHANNELS", 16);
+
+// Connect all rank pairs on all channels so any MSCCL algorithm (arbitrary
+// send/recv peer topology) works without per-launch transport init.
+// Also initializes channels beyond nChannels up to NCCL_MSCCL_MAX_CHANNELS
+// so that MSCCL algos requiring more channels than the auto-tuned ring/tree
+// count don't dereference NULL devPeers pointers.
+ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
+  ncclResult_t ret = ncclSuccess;
+  if (comm && comm->nRanks > 1) {
+    int maxCh = std::max(comm->nChannels, (int)ncclParamMscclMaxChannels());
+    if (maxCh > MAXCHANNELS) maxCh = MAXCHANNELS;
+
+    // Initialize channels beyond nChannels that MSCCL algos may need.
+    for (int c = comm->nChannels; c < maxCh; c++) {
+      if (comm->channels[c].id == -1) {
+        NCCLCHECKGOTO(initChannel(comm, c), ret, fail);
+      }
+    }
+
+    for (int peer = 0; peer < comm->nRanks; peer++) {
+      if (peer == comm->rank) continue;
+      for (int c = 0; c < maxCh; c++) {
+        NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, 1, &peer, 1, &peer, 0), ret, fail);
+      }
+    }
+    NCCLCHECKGOTO(ncclTransportP2pSetup(comm, NULL, 0), ret, fail);
+    INFO(NCCL_INIT, "Connected MSCCL all-to-all channels (%d ranks x %d channels, nChannels=%d)",
+         comm->nRanks, maxCh, comm->nChannels);
   }
 exit:
   return ret;

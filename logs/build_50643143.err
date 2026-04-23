@@ -1,0 +1,2036 @@
++ [[ -z /global/homes/e/egencer ]]
++ '[' -z '' ']'
+++ git rev-parse --is-inside-work-tree
++ is_git=true
++ '[' true ']'
+++ git rev-parse --short HEAD
++ DEV_SIGNATURE=git-de9ed6b
++ set -e
++ export LIB_PREFIX=lib64
++ LIB_PREFIX=lib64
++ BUILDDIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/build/ncclx
++ CUDA_HOME=/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9
++ [[ ! -x /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9/bin/nvcc ]]
++ NVCC_ARCH=a100
+++ /opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9/bin/nvcc --version
+++ grep -oP 'release \K[0-9]+\.[0-9]+'
++ CUDA_VERSION=12.9
+++ echo 12.9
+++ cut -d. -f1
++ CUDA_MAJOR=12
+++ echo 12.9
+++ cut -d. -f2
++ CUDA_MINOR=9
++ [[ 12 -gt 12 ]]
++ [[ 12 -eq 12 ]]
++ [[ 9 -ge 8 ]]
++ NVCC_ARCH=a100,b200
++ NCCL_FP8=1
++ CLEAN_BUILD=0
++ INCREMENTAL_BUILD=1
++ INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ export CONDA_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix
++ CONDA_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ [[ /pscratch/sd/e/egencer/sparsecomms/nccl-prefix == \/ ]]
++ mkdir -p /pscratch/sd/e/egencer/sparsecomms/nccl-prefix
++ command -v module
++ module load cmake
++ [[ -n /global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 ]]
++ export CMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3
++ CMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3
++ [[ -z '' ]]
++ [[ -d /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib64 ]]
++ LIB_SUFFIX=lib
++ CONDA_INCLUDE_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include
++ CONDA_LIB_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib
++ NCCL_HOOK_LIBS=0
++ NCCL_HOME=/global/common/software/nersc9/nccl/2.24.3
++ BASE_DIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse
++ CUDARTLIB=cudart_static
++ THIRD_PARTY_LDFLAGS=
++ [[ -z '' ]]
++ echo 'Building dependencies'
++ build_third_party
++ '[' '' == 1 ']'
++ local third_party_tag=v2026.01.19.00
++ mkdir -p /tmp/third-party
++ pushd /tmp/third-party
++ [[ -z '' ]]
++ build_fb_oss_library https://github.com/fmtlib/fmt.git 11.2.0 fmt '-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF'
++ local repo_url=https://github.com/fmtlib/fmt.git
++ local repo_tag=11.2.0
++ local library_name=fmt
++ local 'extra_flags=-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF'
++ clean_third_party fmt
++ local library_name=fmt
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e fmt ']'
++ git clone --depth 1 -b 11.2.0 https://github.com/fmtlib/fmt.git fmt
+Cloning into 'fmt'...
+Note: switching to '40626af88bd7df9a5fb80be7b25ac85b122d6c21'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../fmt/fmt
++ '[' -f fmt/CMakeLists.txt ']'
++ source_dir=../fmt
++ '[' -f fmt/build/cmake/CMakeLists.txt ']'
++ '[' -f fmt/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../fmt '-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF'
++ local source_dir=../fmt
++ local 'extra_flags=-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF'
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -S ../fmt
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/fmtlib/fmt.git 11.2.0 fmt '-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -DBUILD_SHARED_LIBS=ON'
++ local repo_url=https://github.com/fmtlib/fmt.git
++ local repo_tag=11.2.0
++ local library_name=fmt
++ local 'extra_flags=-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -DBUILD_SHARED_LIBS=ON'
++ clean_third_party fmt
++ local library_name=fmt
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e fmt ']'
++ local source_dir=../fmt/fmt
++ '[' -f fmt/CMakeLists.txt ']'
++ source_dir=../fmt
++ '[' -f fmt/build/cmake/CMakeLists.txt ']'
++ '[' -f fmt/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../fmt '-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -DBUILD_SHARED_LIBS=ON'
++ local source_dir=../fmt
++ local 'extra_flags=-DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -DBUILD_SHARED_LIBS=ON'
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DFMT_INSTALL=ON -DFMT_TEST=OFF -DFMT_DOC=OFF -DBUILD_SHARED_LIBS=ON -S ../fmt
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/madler/zlib.git v1.2.13 zlib -DZLIB_BUILD_TESTING=OFF
++ local repo_url=https://github.com/madler/zlib.git
++ local repo_tag=v1.2.13
++ local library_name=zlib
++ local extra_flags=-DZLIB_BUILD_TESTING=OFF
++ clean_third_party zlib
++ local library_name=zlib
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e zlib ']'
++ git clone --depth 1 -b v1.2.13 https://github.com/madler/zlib.git zlib
+Cloning into 'zlib'...
+warning: refs/tags/v1.2.13 f0def284228615ddee0bf462ef856fd426ceb7e1 is not a commit!
+Note: switching to '04f42ceca40f73e2978b50e93806c2a18c1281fc'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../zlib/zlib
++ '[' -f zlib/CMakeLists.txt ']'
++ source_dir=../zlib
++ '[' -f zlib/build/cmake/CMakeLists.txt ']'
++ '[' -f zlib/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../zlib -DZLIB_BUILD_TESTING=OFF
++ local source_dir=../zlib
++ local extra_flags=-DZLIB_BUILD_TESTING=OFF
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DZLIB_BUILD_TESTING=OFF -S ../zlib
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_CXX_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+    ZLIB_BUILD_TESTING
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_boost
++ local repo_url=https://github.com/boostorg/boost.git
++ local repo_tag=boost-1.82.0
++ local library_name=boost
++ local extra_flags=
++ clean_third_party boost
++ local library_name=boost
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e boost ']'
++ git clone -j 10 --recurse-submodules --depth 1 -b boost-1.82.0 https://github.com/boostorg/boost.git boost
+Cloning into 'boost'...
+Note: switching to 'b6928ae5c92e21a04bbe17a558e6e066dbe632f6'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+Submodule 'accumulators' (https://github.com/boostorg/accumulators.git) registered for path 'libs/accumulators'
+Submodule 'algorithm' (https://github.com/boostorg/algorithm.git) registered for path 'libs/algorithm'
+Submodule 'align' (https://github.com/boostorg/align.git) registered for path 'libs/align'
+Submodule 'any' (https://github.com/boostorg/any.git) registered for path 'libs/any'
+Submodule 'array' (https://github.com/boostorg/array.git) registered for path 'libs/array'
+Submodule 'asio' (https://github.com/boostorg/asio.git) registered for path 'libs/asio'
+Submodule 'assert' (https://github.com/boostorg/assert.git) registered for path 'libs/assert'
+Submodule 'assign' (https://github.com/boostorg/assign.git) registered for path 'libs/assign'
+Submodule 'atomic' (https://github.com/boostorg/atomic.git) registered for path 'libs/atomic'
+Submodule 'beast' (https://github.com/boostorg/beast.git) registered for path 'libs/beast'
+Submodule 'bimap' (https://github.com/boostorg/bimap.git) registered for path 'libs/bimap'
+Submodule 'bind' (https://github.com/boostorg/bind.git) registered for path 'libs/bind'
+Submodule 'callable_traits' (https://github.com/boostorg/callable_traits.git) registered for path 'libs/callable_traits'
+Submodule 'chrono' (https://github.com/boostorg/chrono.git) registered for path 'libs/chrono'
+Submodule 'circular_buffer' (https://github.com/boostorg/circular_buffer.git) registered for path 'libs/circular_buffer'
+Submodule 'compatibility' (https://github.com/boostorg/compatibility.git) registered for path 'libs/compatibility'
+Submodule 'compute' (https://github.com/boostorg/compute.git) registered for path 'libs/compute'
+Submodule 'concept_check' (https://github.com/boostorg/concept_check.git) registered for path 'libs/concept_check'
+Submodule 'config' (https://github.com/boostorg/config.git) registered for path 'libs/config'
+Submodule 'container' (https://github.com/boostorg/container.git) registered for path 'libs/container'
+Submodule 'container_hash' (https://github.com/boostorg/container_hash.git) registered for path 'libs/container_hash'
+Submodule 'context' (https://github.com/boostorg/context.git) registered for path 'libs/context'
+Submodule 'contract' (https://github.com/boostorg/contract.git) registered for path 'libs/contract'
+Submodule 'conversion' (https://github.com/boostorg/conversion.git) registered for path 'libs/conversion'
+Submodule 'convert' (https://github.com/boostorg/convert.git) registered for path 'libs/convert'
+Submodule 'core' (https://github.com/boostorg/core.git) registered for path 'libs/core'
+Submodule 'coroutine' (https://github.com/boostorg/coroutine.git) registered for path 'libs/coroutine'
+Submodule 'coroutine2' (https://github.com/boostorg/coroutine2.git) registered for path 'libs/coroutine2'
+Submodule 'crc' (https://github.com/boostorg/crc.git) registered for path 'libs/crc'
+Submodule 'date_time' (https://github.com/boostorg/date_time.git) registered for path 'libs/date_time'
+Submodule 'describe' (https://github.com/boostorg/describe.git) registered for path 'libs/describe'
+Submodule 'detail' (https://github.com/boostorg/detail.git) registered for path 'libs/detail'
+Submodule 'dll' (https://github.com/boostorg/dll.git) registered for path 'libs/dll'
+Submodule 'dynamic_bitset' (https://github.com/boostorg/dynamic_bitset.git) registered for path 'libs/dynamic_bitset'
+Submodule 'endian' (https://github.com/boostorg/endian.git) registered for path 'libs/endian'
+Submodule 'exception' (https://github.com/boostorg/exception.git) registered for path 'libs/exception'
+Submodule 'fiber' (https://github.com/boostorg/fiber.git) registered for path 'libs/fiber'
+Submodule 'filesystem' (https://github.com/boostorg/filesystem.git) registered for path 'libs/filesystem'
+Submodule 'flyweight' (https://github.com/boostorg/flyweight.git) registered for path 'libs/flyweight'
+Submodule 'foreach' (https://github.com/boostorg/foreach.git) registered for path 'libs/foreach'
+Submodule 'format' (https://github.com/boostorg/format.git) registered for path 'libs/format'
+Submodule 'function' (https://github.com/boostorg/function.git) registered for path 'libs/function'
+Submodule 'function_types' (https://github.com/boostorg/function_types.git) registered for path 'libs/function_types'
+Submodule 'functional' (https://github.com/boostorg/functional.git) registered for path 'libs/functional'
+Submodule 'fusion' (https://github.com/boostorg/fusion.git) registered for path 'libs/fusion'
+Submodule 'geometry' (https://github.com/boostorg/geometry.git) registered for path 'libs/geometry'
+Submodule 'gil' (https://github.com/boostorg/gil.git) registered for path 'libs/gil'
+Submodule 'graph' (https://github.com/boostorg/graph.git) registered for path 'libs/graph'
+Submodule 'graph_parallel' (https://github.com/boostorg/graph_parallel.git) registered for path 'libs/graph_parallel'
+Submodule 'hana' (https://github.com/boostorg/hana.git) registered for path 'libs/hana'
+Submodule 'headers' (https://github.com/boostorg/headers.git) registered for path 'libs/headers'
+Submodule 'heap' (https://github.com/boostorg/heap.git) registered for path 'libs/heap'
+Submodule 'histogram' (https://github.com/boostorg/histogram.git) registered for path 'libs/histogram'
+Submodule 'hof' (https://github.com/boostorg/hof.git) registered for path 'libs/hof'
+Submodule 'icl' (https://github.com/boostorg/icl.git) registered for path 'libs/icl'
+Submodule 'integer' (https://github.com/boostorg/integer.git) registered for path 'libs/integer'
+Submodule 'interprocess' (https://github.com/boostorg/interprocess.git) registered for path 'libs/interprocess'
+Submodule 'intrusive' (https://github.com/boostorg/intrusive.git) registered for path 'libs/intrusive'
+Submodule 'io' (https://github.com/boostorg/io.git) registered for path 'libs/io'
+Submodule 'iostreams' (https://github.com/boostorg/iostreams.git) registered for path 'libs/iostreams'
+Submodule 'iterator' (https://github.com/boostorg/iterator.git) registered for path 'libs/iterator'
+Submodule 'json' (https://github.com/boostorg/json.git) registered for path 'libs/json'
+Submodule 'lambda' (https://github.com/boostorg/lambda.git) registered for path 'libs/lambda'
+Submodule 'lambda2' (https://github.com/boostorg/lambda2.git) registered for path 'libs/lambda2'
+Submodule 'leaf' (https://github.com/boostorg/leaf.git) registered for path 'libs/leaf'
+Submodule 'lexical_cast' (https://github.com/boostorg/lexical_cast.git) registered for path 'libs/lexical_cast'
+Submodule 'local_function' (https://github.com/boostorg/local_function.git) registered for path 'libs/local_function'
+Submodule 'locale' (https://github.com/boostorg/locale.git) registered for path 'libs/locale'
+Submodule 'lockfree' (https://github.com/boostorg/lockfree.git) registered for path 'libs/lockfree'
+Submodule 'log' (https://github.com/boostorg/log.git) registered for path 'libs/log'
+Submodule 'logic' (https://github.com/boostorg/logic.git) registered for path 'libs/logic'
+Submodule 'math' (https://github.com/boostorg/math.git) registered for path 'libs/math'
+Submodule 'metaparse' (https://github.com/boostorg/metaparse.git) registered for path 'libs/metaparse'
+Submodule 'move' (https://github.com/boostorg/move.git) registered for path 'libs/move'
+Submodule 'mp11' (https://github.com/boostorg/mp11.git) registered for path 'libs/mp11'
+Submodule 'mpi' (https://github.com/boostorg/mpi.git) registered for path 'libs/mpi'
+Submodule 'mpl' (https://github.com/boostorg/mpl.git) registered for path 'libs/mpl'
+Submodule 'msm' (https://github.com/boostorg/msm.git) registered for path 'libs/msm'
+Submodule 'multi_array' (https://github.com/boostorg/multi_array.git) registered for path 'libs/multi_array'
+Submodule 'multi_index' (https://github.com/boostorg/multi_index.git) registered for path 'libs/multi_index'
+Submodule 'multiprecision' (https://github.com/boostorg/multiprecision.git) registered for path 'libs/multiprecision'
+Submodule 'mysql' (https://github.com/boostorg/mysql.git) registered for path 'libs/mysql'
+Submodule 'nowide' (https://github.com/boostorg/nowide.git) registered for path 'libs/nowide'
+Submodule 'numeric_conversion' (https://github.com/boostorg/numeric_conversion.git) registered for path 'libs/numeric/conversion'
+Submodule 'interval' (https://github.com/boostorg/interval.git) registered for path 'libs/numeric/interval'
+Submodule 'odeint' (https://github.com/boostorg/odeint.git) registered for path 'libs/numeric/odeint'
+Submodule 'ublas' (https://github.com/boostorg/ublas.git) registered for path 'libs/numeric/ublas'
+Submodule 'optional' (https://github.com/boostorg/optional.git) registered for path 'libs/optional'
+Submodule 'outcome' (https://github.com/boostorg/outcome.git) registered for path 'libs/outcome'
+Submodule 'parameter' (https://github.com/boostorg/parameter.git) registered for path 'libs/parameter'
+Submodule 'parameter_python' (https://github.com/boostorg/parameter_python.git) registered for path 'libs/parameter_python'
+Submodule 'pfr' (https://github.com/boostorg/pfr.git) registered for path 'libs/pfr'
+Submodule 'phoenix' (https://github.com/boostorg/phoenix.git) registered for path 'libs/phoenix'
+Submodule 'poly_collection' (https://github.com/boostorg/poly_collection.git) registered for path 'libs/poly_collection'
+Submodule 'polygon' (https://github.com/boostorg/polygon.git) registered for path 'libs/polygon'
+Submodule 'pool' (https://github.com/boostorg/pool.git) registered for path 'libs/pool'
+Submodule 'predef' (https://github.com/boostorg/predef.git) registered for path 'libs/predef'
+Submodule 'preprocessor' (https://github.com/boostorg/preprocessor.git) registered for path 'libs/preprocessor'
+Submodule 'process' (https://github.com/boostorg/process.git) registered for path 'libs/process'
+Submodule 'program_options' (https://github.com/boostorg/program_options.git) registered for path 'libs/program_options'
+Submodule 'property_map' (https://github.com/boostorg/property_map.git) registered for path 'libs/property_map'
+Submodule 'property_map_parallel' (https://github.com/boostorg/property_map_parallel.git) registered for path 'libs/property_map_parallel'
+Submodule 'property_tree' (https://github.com/boostorg/property_tree.git) registered for path 'libs/property_tree'
+Submodule 'proto' (https://github.com/boostorg/proto.git) registered for path 'libs/proto'
+Submodule 'ptr_container' (https://github.com/boostorg/ptr_container.git) registered for path 'libs/ptr_container'
+Submodule 'python' (https://github.com/boostorg/python.git) registered for path 'libs/python'
+Submodule 'qvm' (https://github.com/boostorg/qvm.git) registered for path 'libs/qvm'
+Submodule 'random' (https://github.com/boostorg/random.git) registered for path 'libs/random'
+Submodule 'range' (https://github.com/boostorg/range.git) registered for path 'libs/range'
+Submodule 'ratio' (https://github.com/boostorg/ratio.git) registered for path 'libs/ratio'
+Submodule 'rational' (https://github.com/boostorg/rational.git) registered for path 'libs/rational'
+Submodule 'regex' (https://github.com/boostorg/regex.git) registered for path 'libs/regex'
+Submodule 'safe_numerics' (https://github.com/boostorg/safe_numerics.git) registered for path 'libs/safe_numerics'
+Submodule 'scope_exit' (https://github.com/boostorg/scope_exit.git) registered for path 'libs/scope_exit'
+Submodule 'serialization' (https://github.com/boostorg/serialization.git) registered for path 'libs/serialization'
+Submodule 'signals2' (https://github.com/boostorg/signals2.git) registered for path 'libs/signals2'
+Submodule 'smart_ptr' (https://github.com/boostorg/smart_ptr.git) registered for path 'libs/smart_ptr'
+Submodule 'sort' (https://github.com/boostorg/sort.git) registered for path 'libs/sort'
+Submodule 'spirit' (https://github.com/boostorg/spirit.git) registered for path 'libs/spirit'
+Submodule 'stacktrace' (https://github.com/boostorg/stacktrace.git) registered for path 'libs/stacktrace'
+Submodule 'statechart' (https://github.com/boostorg/statechart.git) registered for path 'libs/statechart'
+Submodule 'static_assert' (https://github.com/boostorg/static_assert.git) registered for path 'libs/static_assert'
+Submodule 'static_string' (https://github.com/boostorg/static_string.git) registered for path 'libs/static_string'
+Submodule 'stl_interfaces' (https://github.com/boostorg/stl_interfaces.git) registered for path 'libs/stl_interfaces'
+Submodule 'system' (https://github.com/boostorg/system.git) registered for path 'libs/system'
+Submodule 'test' (https://github.com/boostorg/test.git) registered for path 'libs/test'
+Submodule 'thread' (https://github.com/boostorg/thread.git) registered for path 'libs/thread'
+Submodule 'throw_exception' (https://github.com/boostorg/throw_exception.git) registered for path 'libs/throw_exception'
+Submodule 'timer' (https://github.com/boostorg/timer.git) registered for path 'libs/timer'
+Submodule 'tokenizer' (https://github.com/boostorg/tokenizer.git) registered for path 'libs/tokenizer'
+Submodule 'tti' (https://github.com/boostorg/tti.git) registered for path 'libs/tti'
+Submodule 'tuple' (https://github.com/boostorg/tuple.git) registered for path 'libs/tuple'
+Submodule 'type_erasure' (https://github.com/boostorg/type_erasure.git) registered for path 'libs/type_erasure'
+Submodule 'type_index' (https://github.com/boostorg/type_index.git) registered for path 'libs/type_index'
+Submodule 'type_traits' (https://github.com/boostorg/type_traits.git) registered for path 'libs/type_traits'
+Submodule 'typeof' (https://github.com/boostorg/typeof.git) registered for path 'libs/typeof'
+Submodule 'units' (https://github.com/boostorg/units.git) registered for path 'libs/units'
+Submodule 'unordered' (https://github.com/boostorg/unordered.git) registered for path 'libs/unordered'
+Submodule 'url' (https://github.com/boostorg/url.git) registered for path 'libs/url'
+Submodule 'utility' (https://github.com/boostorg/utility.git) registered for path 'libs/utility'
+Submodule 'uuid' (https://github.com/boostorg/uuid.git) registered for path 'libs/uuid'
+Submodule 'variant' (https://github.com/boostorg/variant.git) registered for path 'libs/variant'
+Submodule 'variant2' (https://github.com/boostorg/variant2.git) registered for path 'libs/variant2'
+Submodule 'vmd' (https://github.com/boostorg/vmd.git) registered for path 'libs/vmd'
+Submodule 'wave' (https://github.com/boostorg/wave.git) registered for path 'libs/wave'
+Submodule 'winapi' (https://github.com/boostorg/winapi.git) registered for path 'libs/winapi'
+Submodule 'xpressive' (https://github.com/boostorg/xpressive.git) registered for path 'libs/xpressive'
+Submodule 'yap' (https://github.com/boostorg/yap.git) registered for path 'libs/yap'
+Submodule 'more' (https://github.com/boostorg/more.git) registered for path 'more'
+Submodule 'auto_index' (https://github.com/boostorg/auto_index.git) registered for path 'tools/auto_index'
+Submodule 'bcp' (https://github.com/boostorg/bcp.git) registered for path 'tools/bcp'
+Submodule 'boost_install' (https://github.com/boostorg/boost_install.git) registered for path 'tools/boost_install'
+Submodule 'boostbook' (https://github.com/boostorg/boostbook.git) registered for path 'tools/boostbook'
+Submodule 'boostdep' (https://github.com/boostorg/boostdep.git) registered for path 'tools/boostdep'
+Submodule 'build' (https://github.com/boostorg/build.git) registered for path 'tools/build'
+Submodule 'check_build' (https://github.com/boostorg/check_build.git) registered for path 'tools/check_build'
+Submodule 'cmake' (https://github.com/boostorg/cmake.git) registered for path 'tools/cmake'
+Submodule 'docca' (https://github.com/boostorg/docca.git) registered for path 'tools/docca'
+Submodule 'inspect' (https://github.com/boostorg/inspect.git) registered for path 'tools/inspect'
+Submodule 'litre' (https://github.com/boostorg/litre.git) registered for path 'tools/litre'
+Submodule 'quickbook' (https://github.com/boostorg/quickbook.git) registered for path 'tools/quickbook'
+Cloning into '/tmp/third-party/boost/libs/accumulators'...
+Cloning into '/tmp/third-party/boost/libs/any'...
+Cloning into '/tmp/third-party/boost/libs/assign'...
+Cloning into '/tmp/third-party/boost/libs/array'...
+Cloning into '/tmp/third-party/boost/libs/assert'...
+Cloning into '/tmp/third-party/boost/libs/align'...
+Cloning into '/tmp/third-party/boost/libs/algorithm'...
+Cloning into '/tmp/third-party/boost/libs/circular_buffer'...
+Cloning into '/tmp/third-party/boost/libs/atomic'...
+Cloning into '/tmp/third-party/boost/libs/compatibility'...
+Cloning into '/tmp/third-party/boost/libs/bind'...
+Cloning into '/tmp/third-party/boost/libs/beast'...
+Cloning into '/tmp/third-party/boost/libs/bimap'...
+Cloning into '/tmp/third-party/boost/libs/context'...
+Cloning into '/tmp/third-party/boost/libs/callable_traits'...
+Cloning into '/tmp/third-party/boost/libs/chrono'...
+Cloning into '/tmp/third-party/boost/libs/concept_check'...
+Cloning into '/tmp/third-party/boost/libs/compute'...
+Cloning into '/tmp/third-party/boost/libs/container_hash'...
+Cloning into '/tmp/third-party/boost/libs/conversion'...
+Cloning into '/tmp/third-party/boost/libs/config'...
+Cloning into '/tmp/third-party/boost/libs/asio'...
+Cloning into '/tmp/third-party/boost/libs/core'...
+Cloning into '/tmp/third-party/boost/libs/crc'...
+Cloning into '/tmp/third-party/boost/libs/convert'...
+Cloning into '/tmp/third-party/boost/libs/coroutine'...
+Cloning into '/tmp/third-party/boost/libs/container'...
+Cloning into '/tmp/third-party/boost/libs/contract'...
+Cloning into '/tmp/third-party/boost/libs/coroutine2'...
+Cloning into '/tmp/third-party/boost/libs/describe'...
+Cloning into '/tmp/third-party/boost/libs/dynamic_bitset'...
+Cloning into '/tmp/third-party/boost/libs/detail'...
+Cloning into '/tmp/third-party/boost/libs/date_time'...
+Cloning into '/tmp/third-party/boost/libs/exception'...
+Cloning into '/tmp/third-party/boost/libs/endian'...
+Cloning into '/tmp/third-party/boost/libs/dll'...
+Cloning into '/tmp/third-party/boost/libs/format'...
+Cloning into '/tmp/third-party/boost/libs/flyweight'...
+Cloning into '/tmp/third-party/boost/libs/foreach'...
+Cloning into '/tmp/third-party/boost/libs/filesystem'...
+Cloning into '/tmp/third-party/boost/libs/function_types'...
+Cloning into '/tmp/third-party/boost/libs/function'...
+Cloning into '/tmp/third-party/boost/libs/fiber'...
+Cloning into '/tmp/third-party/boost/libs/headers'...
+Cloning into '/tmp/third-party/boost/libs/functional'...
+Cloning into '/tmp/third-party/boost/libs/hof'...
+Cloning into '/tmp/third-party/boost/libs/heap'...
+Cloning into '/tmp/third-party/boost/libs/graph_parallel'...
+Cloning into '/tmp/third-party/boost/libs/gil'...
+Cloning into '/tmp/third-party/boost/libs/fusion'...
+Cloning into '/tmp/third-party/boost/libs/integer'...
+Cloning into '/tmp/third-party/boost/libs/histogram'...
+Cloning into '/tmp/third-party/boost/libs/hana'...
+Cloning into '/tmp/third-party/boost/libs/icl'...
+Cloning into '/tmp/third-party/boost/libs/io'...
+Cloning into '/tmp/third-party/boost/libs/intrusive'...
+Cloning into '/tmp/third-party/boost/libs/graph'...
+Cloning into '/tmp/third-party/boost/libs/lexical_cast'...
+Cloning into '/tmp/third-party/boost/libs/interprocess'...
+Cloning into '/tmp/third-party/boost/libs/lambda2'...
+Cloning into '/tmp/third-party/boost/libs/iostreams'...
+Cloning into '/tmp/third-party/boost/libs/lambda'...
+Cloning into '/tmp/third-party/boost/libs/iterator'...
+Cloning into '/tmp/third-party/boost/libs/json'...
+Cloning into '/tmp/third-party/boost/libs/geometry'...
+Cloning into '/tmp/third-party/boost/libs/leaf'...
+Cloning into '/tmp/third-party/boost/libs/local_function'...
+Cloning into '/tmp/third-party/boost/libs/lockfree'...
+Cloning into '/tmp/third-party/boost/libs/logic'...
+Cloning into '/tmp/third-party/boost/libs/locale'...
+Cloning into '/tmp/third-party/boost/libs/log'...
+Cloning into '/tmp/third-party/boost/libs/math'...
+Cloning into '/tmp/third-party/boost/libs/metaparse'...
+Cloning into '/tmp/third-party/boost/libs/move'...
+Cloning into '/tmp/third-party/boost/libs/mpi'...
+Cloning into '/tmp/third-party/boost/libs/mp11'...
+Cloning into '/tmp/third-party/boost/libs/multi_array'...
+Cloning into '/tmp/third-party/boost/libs/mpl'...
+Cloning into '/tmp/third-party/boost/libs/multi_index'...
+Cloning into '/tmp/third-party/boost/libs/numeric/conversion'...
+Cloning into '/tmp/third-party/boost/libs/nowide'...
+Cloning into '/tmp/third-party/boost/libs/numeric/interval'...
+Cloning into '/tmp/third-party/boost/libs/msm'...
+Cloning into '/tmp/third-party/boost/libs/numeric/odeint'...
+Cloning into '/tmp/third-party/boost/libs/parameter_python'...
+Cloning into '/tmp/third-party/boost/libs/optional'...
+Cloning into '/tmp/third-party/boost/libs/multiprecision'...
+Cloning into '/tmp/third-party/boost/libs/parameter'...
+Cloning into '/tmp/third-party/boost/libs/pfr'...
+Cloning into '/tmp/third-party/boost/libs/mysql'...
+Cloning into '/tmp/third-party/boost/libs/outcome'...
+Cloning into '/tmp/third-party/boost/libs/poly_collection'...
+Cloning into '/tmp/third-party/boost/libs/phoenix'...
+Cloning into '/tmp/third-party/boost/libs/polygon'...
+Cloning into '/tmp/third-party/boost/libs/predef'...
+Cloning into '/tmp/third-party/boost/libs/numeric/ublas'...
+Cloning into '/tmp/third-party/boost/libs/pool'...
+Cloning into '/tmp/third-party/boost/libs/property_map_parallel'...
+Cloning into '/tmp/third-party/boost/libs/preprocessor'...
+Cloning into '/tmp/third-party/boost/libs/property_map'...
+Cloning into '/tmp/third-party/boost/libs/program_options'...
+Cloning into '/tmp/third-party/boost/libs/process'...
+Cloning into '/tmp/third-party/boost/libs/property_tree'...
+Cloning into '/tmp/third-party/boost/libs/proto'...
+Cloning into '/tmp/third-party/boost/libs/ptr_container'...
+Cloning into '/tmp/third-party/boost/libs/random'...
+Cloning into '/tmp/third-party/boost/libs/range'...
+Cloning into '/tmp/third-party/boost/libs/rational'...
+Cloning into '/tmp/third-party/boost/libs/ratio'...
+Cloning into '/tmp/third-party/boost/libs/qvm'...
+Cloning into '/tmp/third-party/boost/libs/python'...
+Cloning into '/tmp/third-party/boost/libs/scope_exit'...
+Cloning into '/tmp/third-party/boost/libs/safe_numerics'...
+Cloning into '/tmp/third-party/boost/libs/regex'...
+Cloning into '/tmp/third-party/boost/libs/signals2'...
+Cloning into '/tmp/third-party/boost/libs/sort'...
+Cloning into '/tmp/third-party/boost/libs/smart_ptr'...
+Cloning into '/tmp/third-party/boost/libs/stacktrace'...
+Cloning into '/tmp/third-party/boost/libs/static_assert'...
+Cloning into '/tmp/third-party/boost/libs/statechart'...
+Cloning into '/tmp/third-party/boost/libs/serialization'...
+Cloning into '/tmp/third-party/boost/libs/static_string'...
+Cloning into '/tmp/third-party/boost/libs/stl_interfaces'...
+Cloning into '/tmp/third-party/boost/libs/system'...
+Cloning into '/tmp/third-party/boost/libs/throw_exception'...
+Cloning into '/tmp/third-party/boost/libs/timer'...
+Cloning into '/tmp/third-party/boost/libs/tokenizer'...
+Cloning into '/tmp/third-party/boost/libs/typeof'...
+Cloning into '/tmp/third-party/boost/libs/test'...
+Cloning into '/tmp/third-party/boost/libs/thread'...
+Cloning into '/tmp/third-party/boost/libs/tuple'...
+Cloning into '/tmp/third-party/boost/libs/type_erasure'...
+Cloning into '/tmp/third-party/boost/libs/type_index'...
+Cloning into '/tmp/third-party/boost/libs/tti'...
+Cloning into '/tmp/third-party/boost/libs/variant2'...
+Cloning into '/tmp/third-party/boost/libs/type_traits'...
+Cloning into '/tmp/third-party/boost/libs/utility'...
+Cloning into '/tmp/third-party/boost/libs/units'...
+Cloning into '/tmp/third-party/boost/libs/wave'...
+Cloning into '/tmp/third-party/boost/libs/uuid'...
+Cloning into '/tmp/third-party/boost/libs/variant'...
+Cloning into '/tmp/third-party/boost/libs/url'...
+Cloning into '/tmp/third-party/boost/libs/unordered'...
+Cloning into '/tmp/third-party/boost/libs/vmd'...
+Cloning into '/tmp/third-party/boost/libs/winapi'...
+Cloning into '/tmp/third-party/boost/libs/yap'...
+Cloning into '/tmp/third-party/boost/tools/bcp'...
+Cloning into '/tmp/third-party/boost/more'...
+Cloning into '/tmp/third-party/boost/libs/xpressive'...
+Cloning into '/tmp/third-party/boost/tools/boost_install'...
+Cloning into '/tmp/third-party/boost/tools/boostdep'...
+Cloning into '/tmp/third-party/boost/tools/boostbook'...
+Cloning into '/tmp/third-party/boost/tools/litre'...
+Cloning into '/tmp/third-party/boost/tools/check_build'...
+Cloning into '/tmp/third-party/boost/tools/auto_index'...
+Cloning into '/tmp/third-party/boost/tools/cmake'...
+Cloning into '/tmp/third-party/boost/tools/inspect'...
+Cloning into '/tmp/third-party/boost/tools/docca'...
+Cloning into '/tmp/third-party/boost/libs/spirit'...
+Cloning into '/tmp/third-party/boost/tools/quickbook'...
+Cloning into '/tmp/third-party/boost/tools/build'...
+From https://github.com/boostorg/algorithm
+ * branch            28dd87b90e79c5e1d9de82835125aa2bcbb3f468 -> FETCH_HEAD
+From https://github.com/boostorg/asio
+ * branch              955413750677b295b885c31fb75b56b30bfa7158 -> FETCH_HEAD
+From https://github.com/boostorg/context
+ * branch            dbe0b27303c2a834b87ef67ac07e6a8e22f7ad8e -> FETCH_HEAD
+From https://github.com/boostorg/date_time
+ * branch            85e637cb325208c2af9af791c3a1948b4888c6cd -> FETCH_HEAD
+From https://github.com/boostorg/geometry
+ * branch                2ec9d65d1294edb97157b564726fdf56b6ac562f -> FETCH_HEAD
+From https://github.com/boostorg/gil
+ * branch            8994c2ff8ed8b88e0ffef9658a4c603c4a001fad -> FETCH_HEAD
+From https://github.com/boostorg/locale
+ * branch            a4c26e4a4743d267c6cf0fadcc1991330cfbd400 -> FETCH_HEAD
+From https://github.com/boostorg/multi_index
+ * branch            a5c3213de4f5ed04d588af2cc3515df294b04054 -> FETCH_HEAD
+From https://github.com/boostorg/multiprecision
+ * branch              40413972847280fcfc893968db4b3c8680973a77 -> FETCH_HEAD
+From https://github.com/boostorg/nowide
+ * branch            b96aba4a432f7502eb8dcacaef45b93494afc873 -> FETCH_HEAD
+From https://github.com/boostorg/ublas
+ * branch              f0e55caf310d5e01c7e9f2190b2422e113ddeedb -> FETCH_HEAD
+From https://github.com/boostorg/safe_numerics
+ * branch            777e0be5ec763d0333a717c5e421a4f7c5e5bdc9 -> FETCH_HEAD
+From https://github.com/boostorg/test
+ * branch              b69fbb3854f4b76ecb5b8060ed71406478183a03 -> FETCH_HEAD
+From https://github.com/boostorg/bcp
+ * branch            e0b9262f6ff4778973a29b601183f3f9367e69d2 -> FETCH_HEAD
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ pushd boost
++ ./bootstrap.sh --prefix=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix --libdir=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib --without-libraries=python
++ ./b2 -q cxxflags=-fPIC cflags=-fPIC install
++ popd
++ build_openssl
++ local repo_url=https://github.com/openssl/openssl.git
++ local repo_tag=openssl-3.5.1
++ local library_name=openssl
++ local extra_flags=
++ clean_third_party openssl
++ local library_name=openssl
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e openssl ']'
++ git clone -j 10 --recurse-submodules --depth 1 -b openssl-3.5.1 https://github.com/openssl/openssl.git openssl
+Cloning into 'openssl'...
+warning: refs/tags/openssl-3.5.1 b94da0320633fc8f34d5d3fa59f336d73e065165 is not a commit!
+Note: switching to 'aea7aaf2abb04789f5868cbabec406ea43aa84bf'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+Submodule 'cloudflare-quiche' (https://github.com/cloudflare/quiche) registered for path 'cloudflare-quiche'
+Submodule 'fuzz/corpora' (https://github.com/openssl/fuzz-corpora) registered for path 'fuzz/corpora'
+Submodule 'gost-engine' (https://github.com/gost-engine/engine) registered for path 'gost-engine'
+Submodule 'krb5' (https://github.com/krb5/krb5) registered for path 'krb5'
+Submodule 'oqs-provider' (https://github.com/open-quantum-safe/oqs-provider.git) registered for path 'oqs-provider'
+Submodule 'pkcs11-provider' (https://github.com/latchset/pkcs11-provider.git) registered for path 'pkcs11-provider'
+Submodule 'pyca.cryptography' (https://github.com/pyca/cryptography.git) registered for path 'pyca-cryptography'
+Submodule 'python-ecdsa' (https://github.com/tlsfuzzer/python-ecdsa) registered for path 'python-ecdsa'
+Submodule 'tlsfuzzer' (https://github.com/tlsfuzzer/tlsfuzzer) registered for path 'tlsfuzzer'
+Submodule 'tlslite-ng' (https://github.com/tlsfuzzer/tlslite-ng) registered for path 'tlslite-ng'
+Submodule 'wycheproof' (https://github.com/google/wycheproof) registered for path 'wycheproof'
+Cloning into '/tmp/third-party/openssl/cloudflare-quiche'...
+Cloning into '/tmp/third-party/openssl/python-ecdsa'...
+Cloning into '/tmp/third-party/openssl/oqs-provider'...
+Cloning into '/tmp/third-party/openssl/tlslite-ng'...
+Cloning into '/tmp/third-party/openssl/pkcs11-provider'...
+Cloning into '/tmp/third-party/openssl/gost-engine'...
+Cloning into '/tmp/third-party/openssl/fuzz/corpora'...
+Cloning into '/tmp/third-party/openssl/tlsfuzzer'...
+Cloning into '/tmp/third-party/openssl/krb5'...
+Cloning into '/tmp/third-party/openssl/pyca-cryptography'...
+Cloning into '/tmp/third-party/openssl/wycheproof'...
+Submodule 'boringssl' (https://github.com/google/boringssl.git) registered for path 'cloudflare-quiche/quiche/deps/boringssl'
+Cloning into '/tmp/third-party/openssl/cloudflare-quiche/quiche/deps/boringssl'...
+From https://github.com/google/boringssl
+ * branch                f1c75347daa2ea81a941e953f2263e0a4d970c8d -> FETCH_HEAD
+Submodule 'libprov' (https://github.com/provider-corner/libprov.git) registered for path 'gost-engine/libprov'
+Cloning into '/tmp/third-party/openssl/gost-engine/libprov'...
+Submodule 'python-ecdsa' (https://github.com/tlsfuzzer/python-ecdsa.git) registered for path 'pkcs11-provider/python-ecdsa'
+Submodule 'tlsfuzzer' (https://github.com/tlsfuzzer/tlsfuzzer.git) registered for path 'pkcs11-provider/tlsfuzzer'
+Submodule 'tlslite-ng' (https://github.com/tlsfuzzer/tlslite-ng.git) registered for path 'pkcs11-provider/tlslite-ng'
+Cloning into '/tmp/third-party/openssl/pkcs11-provider/python-ecdsa'...
+Cloning into '/tmp/third-party/openssl/pkcs11-provider/tlsfuzzer'...
+Cloning into '/tmp/third-party/openssl/pkcs11-provider/tlslite-ng'...
++ pushd openssl
++ ./config no-shared --prefix=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix --openssldir=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix --libdir=lib
++ make -j
+DEBUG: all keys: APPLINKDIR, BINDIR, CMAKECONFIGDIR, ENGINESDIR, INCLUDEDIR, LDLIBS, LIBDIR, MODULESDIR, PKGCONFIGDIR, PREFIX, VERSION, libdir
+DEBUG: PREFIX = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix => PREFIX = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix
+DEBUG: libdir = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib => libdir = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib
+DEBUG: BINDIR = bin => BINDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin, BINDIR_REL_PREFIX = bin
+DEBUG: LIBDIR = lib => LIBDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib, LIBDIR_REL_PREFIX = lib
+DEBUG: INCLUDEDIR = include => INCLUDEDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include, INCLUDEDIR_REL_PREFIX = include
+DEBUG: APPLINKDIR = include/openssl => APPLINKDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include/openssl, APPLINKDIR_REL_PREFIX = include/openssl
+DEBUG: ENGINESDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/engines-3 => ENGINESDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/engines-3, ENGINESDIR_REL_LIBDIR = engines-3
+DEBUG: MODULESDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/ossl-modules => MODULESDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/ossl-modules, MODULESDIR_REL_LIBDIR = ossl-modules
+DEBUG: PKGCONFIGDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/pkgconfig => PKGCONFIGDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/pkgconfig, PKGCONFIGDIR_REL_LIBDIR = pkgconfig
+DEBUG: CMAKECONFIGDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/OpenSSL => CMAKECONFIGDIR = /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/OpenSSL, CMAKECONFIGDIR_REL_LIBDIR = cmake/OpenSSL
+DEBUG: all keys: APPLINKDIR, BINDIR, CMAKECONFIGDIR, ENGINESDIR, INCLUDEDIR, LDLIBS, LIBDIR, MODULESDIR, PKGCONFIGDIR, PREFIX, VERSION, libdir
+No value given for CMAKECONFIGDIR
+No value given for PKGCONFIGDIR
+No value given for libdir
+DEBUG: PREFIX = . => PREFIX = /tmp/third-party/openssl
+DEBUG: libdir = . => libdir = /tmp/third-party/openssl
+DEBUG: BINDIR = apps => BINDIR = /tmp/third-party/openssl/apps, BINDIR_REL_PREFIX = apps
+DEBUG: LIBDIR =  => LIBDIR = /tmp/third-party/openssl, LIBDIR_REL_PREFIX = 
+DEBUG: INCLUDEDIR = [ include, ./include ] => INCLUDEDIR = [ /tmp/third-party/openssl/include, /tmp/third-party/openssl/include ], INCLUDEDIR_REL_PREFIX = [ include, ./include ]
+DEBUG: APPLINKDIR = ms => APPLINKDIR = /tmp/third-party/openssl/ms, APPLINKDIR_REL_PREFIX = ms
+DEBUG: ENGINESDIR = engines => ENGINESDIR = /tmp/third-party/openssl/engines, ENGINESDIR_REL_LIBDIR = engines
+DEBUG: MODULESDIR = providers => MODULESDIR = /tmp/third-party/openssl/providers, MODULESDIR_REL_LIBDIR = providers
+DEBUG: PKGCONFIGDIR = . => PKGCONFIGDIR = /tmp/third-party/openssl, PKGCONFIGDIR_REL_LIBDIR = .
+DEBUG: CMAKECONFIGDIR = . => CMAKECONFIGDIR = /tmp/third-party/openssl, CMAKECONFIGDIR_REL_LIBDIR = .
++ make install
+Cannot find "WWW::Curl::Easy" in podpath: cannot find suitable replacement path, cannot resolve link
+Cannot find "WWW::Curl::Easy" in podpath: cannot find suitable replacement path, cannot resolve link
++ popd
++ build_fb_oss_library https://github.com/Cyan4973/xxHash.git v0.8.0 xxhash
++ local repo_url=https://github.com/Cyan4973/xxHash.git
++ local repo_tag=v0.8.0
++ local library_name=xxhash
++ local extra_flags=
++ clean_third_party xxhash
++ local library_name=xxhash
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e xxhash ']'
++ git clone --depth 1 -b v0.8.0 https://github.com/Cyan4973/xxHash.git xxhash
+Cloning into 'xxhash'...
+Note: switching to '94e5f23e736f2bb67ebdf90727353e65344f9fc0'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../xxhash/xxhash
++ '[' -f xxhash/CMakeLists.txt ']'
++ '[' -f xxhash/build/cmake/CMakeLists.txt ']'
++ '[' -f xxhash/cmake_unofficial/CMakeLists.txt ']'
++ source_dir=../xxhash/cmake_unofficial
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../xxhash/cmake_unofficial ''
++ local source_dir=../xxhash/cmake_unofficial
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../xxhash/cmake_unofficial
+CMake Deprecation Warning at CMakeLists.txt:8 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_CXX_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/gflags/gflags.git v2.2.2 gflags
++ local repo_url=https://github.com/gflags/gflags.git
++ local repo_tag=v2.2.2
++ local library_name=gflags
++ local extra_flags=
++ clean_third_party gflags
++ local library_name=gflags
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e gflags ']'
++ git clone --depth 1 -b v2.2.2 https://github.com/gflags/gflags.git gflags
+Cloning into 'gflags'...
+warning: refs/tags/v2.2.2 ae8ec2b1b2238ecdd40bb84f1a2e65b1e2c85b00 is not a commit!
+Note: switching to 'e171aa2d15ed9eb17054558e0b3a6a413bb01067'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../gflags/gflags
++ '[' -f gflags/CMakeLists.txt ']'
++ source_dir=../gflags
++ '[' -f gflags/build/cmake/CMakeLists.txt ']'
++ '[' -f gflags/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../gflags ''
++ local source_dir=../gflags
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../gflags
+CMake Deprecation Warning at CMakeLists.txt:73 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/gflags/gflags.git v2.2.2 gflags -DBUILD_SHARED_LIBS=ON
++ local repo_url=https://github.com/gflags/gflags.git
++ local repo_tag=v2.2.2
++ local library_name=gflags
++ local extra_flags=-DBUILD_SHARED_LIBS=ON
++ clean_third_party gflags
++ local library_name=gflags
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e gflags ']'
++ local source_dir=../gflags/gflags
++ '[' -f gflags/CMakeLists.txt ']'
++ source_dir=../gflags
++ '[' -f gflags/build/cmake/CMakeLists.txt ']'
++ '[' -f gflags/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../gflags -DBUILD_SHARED_LIBS=ON
++ local source_dir=../gflags
++ local extra_flags=-DBUILD_SHARED_LIBS=ON
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DBUILD_SHARED_LIBS=ON -S ../gflags
+CMake Deprecation Warning at CMakeLists.txt:73 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/google/glog.git v0.4.0 glog
++ local repo_url=https://github.com/google/glog.git
++ local repo_tag=v0.4.0
++ local library_name=glog
++ local extra_flags=
++ clean_third_party glog
++ local library_name=glog
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e glog ']'
++ git clone --depth 1 -b v0.4.0 https://github.com/google/glog.git glog
+Cloning into 'glog'...
+warning: refs/tags/v0.4.0 09b1aaa971e0b2c658f2521c942ff7841e0cfec3 is not a commit!
+Note: switching to '96a2f23dca4cc7180821ca5f32e526314395d26a'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../glog/glog
++ '[' -f glog/CMakeLists.txt ']'
++ source_dir=../glog
++ '[' -f glog/build/cmake/CMakeLists.txt ']'
++ '[' -f glog/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../glog ''
++ local source_dir=../glog
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../glog
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/google/glog.git v0.4.0 glog -DBUILD_SHARED_LIBS=ON
++ local repo_url=https://github.com/google/glog.git
++ local repo_tag=v0.4.0
++ local library_name=glog
++ local extra_flags=-DBUILD_SHARED_LIBS=ON
++ clean_third_party glog
++ local library_name=glog
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e glog ']'
++ local source_dir=../glog/glog
++ '[' -f glog/CMakeLists.txt ']'
++ source_dir=../glog
++ '[' -f glog/build/cmake/CMakeLists.txt ']'
++ '[' -f glog/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../glog -DBUILD_SHARED_LIBS=ON
++ local source_dir=../glog
++ local extra_flags=-DBUILD_SHARED_LIBS=ON
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DBUILD_SHARED_LIBS=ON -S ../glog
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/facebook/zstd.git v1.5.6 zstd
++ local repo_url=https://github.com/facebook/zstd.git
++ local repo_tag=v1.5.6
++ local library_name=zstd
++ local extra_flags=
++ clean_third_party zstd
++ local library_name=zstd
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e zstd ']'
++ git clone --depth 1 -b v1.5.6 https://github.com/facebook/zstd.git zstd
+Cloning into 'zstd'...
+warning: refs/tags/v1.5.6 35016bc1c0b9a2f7121b7ecc312100aad7d9f2ad is not a commit!
+Note: switching to '794ea1b0afca0f020f4e57b6732332231fb23c70'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../zstd/zstd
++ '[' -f zstd/CMakeLists.txt ']'
++ '[' -f zstd/build/cmake/CMakeLists.txt ']'
++ source_dir=../zstd/build/cmake
++ '[' -f zstd/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../zstd/build/cmake ''
++ local source_dir=../zstd/build/cmake
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../zstd/build/cmake
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_automake_library https://github.com/jedisct1/libsodium.git 1.0.20-RELEASE sodium
++ local repo_url=https://github.com/jedisct1/libsodium.git
++ local repo_tag=1.0.20-RELEASE
++ local library_name=sodium
++ local extra_flags=
++ clean_third_party sodium
++ local library_name=sodium
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e sodium ']'
++ git clone --depth 1 -b 1.0.20-RELEASE https://github.com/jedisct1/libsodium.git sodium
+Cloning into 'sodium'...
+warning: refs/tags/1.0.20-RELEASE 70e11cafa966ea6b99128baf05dbc96679f030f8 is not a commit!
+Note: switching to '9511c982fb1d046470a8b42aa36556cdb7da15de'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ pushd sodium
++ ./configure --prefix=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix --disable-pie
++ make -j
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
+libtool: warning: '-version-info/-version-number' is ignored for convenience libraries
++ make install
++ popd
++ build_fb_oss_library https://github.com/fastfloat/fast_float.git v8.0.2 fast_float -DFASTFLOAT_INSTALL=ON
++ local repo_url=https://github.com/fastfloat/fast_float.git
++ local repo_tag=v8.0.2
++ local library_name=fast_float
++ local extra_flags=-DFASTFLOAT_INSTALL=ON
++ clean_third_party fast_float
++ local library_name=fast_float
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e fast_float ']'
++ git clone --depth 1 -b v8.0.2 https://github.com/fastfloat/fast_float.git fast_float
+Cloning into 'fast_float'...
+Note: switching to '50a80a73ab2ab256ba1c3bf86923ddd8b4202bc7'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../fast_float/fast_float
++ '[' -f fast_float/CMakeLists.txt ']'
++ source_dir=../fast_float
++ '[' -f fast_float/build/cmake/CMakeLists.txt ']'
++ '[' -f fast_float/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../fast_float -DFASTFLOAT_INSTALL=ON
++ local source_dir=../fast_float
++ local extra_flags=-DFASTFLOAT_INSTALL=ON
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DFASTFLOAT_INSTALL=ON -S ../fast_float
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/libevent/libevent.git release-2.1.12-stable event '-DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_SAMPLES=ON'
++ local repo_url=https://github.com/libevent/libevent.git
++ local repo_tag=release-2.1.12-stable
++ local library_name=event
++ local 'extra_flags=-DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_SAMPLES=ON'
++ clean_third_party event
++ local library_name=event
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e event ']'
++ git clone --depth 1 -b release-2.1.12-stable https://github.com/libevent/libevent.git event
+Cloning into 'event'...
+warning: refs/tags/release-2.1.12-stable 4f12382b2c39aaed023677ce8b8efa31cb53f964 is not a commit!
+Note: switching to '5df3037d10556bfcb675bc73e516978b75fc7bc7'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../event/event
++ '[' -f event/CMakeLists.txt ']'
++ source_dir=../event
++ '[' -f event/build/cmake/CMakeLists.txt ']'
++ '[' -f event/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../event '-DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_SAMPLES=ON'
++ local source_dir=../event
++ local 'extra_flags=-DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_SAMPLES=ON'
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_SAMPLES=ON -S ../event
+CMake Deprecation Warning at CMakeLists.txt:22 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_CXX_COMPILER
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/google/double-conversion.git v3.3.1 double-conversion
++ local repo_url=https://github.com/google/double-conversion.git
++ local repo_tag=v3.3.1
++ local library_name=double-conversion
++ local extra_flags=
++ clean_third_party double-conversion
++ local library_name=double-conversion
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e double-conversion ']'
++ git clone --depth 1 -b v3.3.1 https://github.com/google/double-conversion.git double-conversion
+Cloning into 'double-conversion'...
+Note: switching to 'ae0dbfeb9744efd216c95b30555049d75d47116a'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../double-conversion/double-conversion
++ '[' -f double-conversion/CMakeLists.txt ']'
++ source_dir=../double-conversion
++ '[' -f double-conversion/build/cmake/CMakeLists.txt ']'
++ '[' -f double-conversion/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../double-conversion ''
++ local source_dir=../double-conversion
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../double-conversion
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/facebook/folly.git v2026.01.19.00 folly '-DUSE_STATIC_DEPS_ON_UNIX=ON -DOPENSSL_USE_STATIC_LIBS=ON'
++ local repo_url=https://github.com/facebook/folly.git
++ local repo_tag=v2026.01.19.00
++ local library_name=folly
++ local 'extra_flags=-DUSE_STATIC_DEPS_ON_UNIX=ON -DOPENSSL_USE_STATIC_LIBS=ON'
++ clean_third_party folly
++ local library_name=folly
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e folly ']'
++ git clone --depth 1 -b v2026.01.19.00 https://github.com/facebook/folly.git folly
+Cloning into 'folly'...
+Note: switching to '677483f845f3c421ffc83c734a8793dc8ed81ecc'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../folly/folly
++ '[' -f folly/CMakeLists.txt ']'
++ source_dir=../folly
++ '[' -f folly/build/cmake/CMakeLists.txt ']'
++ '[' -f folly/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../folly '-DUSE_STATIC_DEPS_ON_UNIX=ON -DOPENSSL_USE_STATIC_LIBS=ON'
++ local source_dir=../folly
++ local 'extra_flags=-DUSE_STATIC_DEPS_ON_UNIX=ON -DOPENSSL_USE_STATIC_LIBS=ON'
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DUSE_STATIC_DEPS_ON_UNIX=ON -DOPENSSL_USE_STATIC_LIBS=ON -S ../folly
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBUNWIND)
+  does not match the name of the calling package (LibUnwind).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  build/fbcode_builder/CMake/FindLibUnwind.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  build/fbcode_builder/CMake/FindGlog.cmake:44 (find_package)
+  CMake/folly-deps.cmake:65 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (ZSTD) does
+  not match the name of the calling package (Zstd).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindZstd.cmake:32 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:114 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (SNAPPY)
+  does not match the name of the calling package (Snappy).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindSnappy.cmake:31 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:121 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBDWARF)
+  does not match the name of the calling package (LibDwarf).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindLibDwarf.cmake:26 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:128 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBIBERTY)
+  does not match the name of the calling package (Libiberty).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindLibiberty.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:132 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBAIO)
+  does not match the name of the calling package (LibAIO).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindLibAIO.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:136 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBURING)
+  does not match the name of the calling package (LibUring).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindLibUring.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:140 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBSODIUM)
+  does not match the name of the calling package (Libsodium).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMake/FindLibsodium.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:144 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBUNWIND)
+  does not match the name of the calling package (LibUnwind).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  build/fbcode_builder/CMake/FindLibUnwind.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMake/folly-deps.cmake:156 (find_package)
+  CMakeLists.txt:166 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ [[ -z '' ]]
++ build_fb_oss_library https://github.com/facebookincubator/fizz.git v2026.01.19.00 fizz '-DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF'
++ local repo_url=https://github.com/facebookincubator/fizz.git
++ local repo_tag=v2026.01.19.00
++ local library_name=fizz
++ local 'extra_flags=-DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF'
++ clean_third_party fizz
++ local library_name=fizz
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e fizz ']'
++ git clone --depth 1 -b v2026.01.19.00 https://github.com/facebookincubator/fizz.git fizz
+Cloning into 'fizz'...
+Note: switching to '4199753385225435c5808713cf172f8da47349e8'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../fizz/fizz
++ '[' -f fizz/CMakeLists.txt ']'
++ '[' -f fizz/build/cmake/CMakeLists.txt ']'
++ '[' -f fizz/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../fizz/fizz '-DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF'
++ local source_dir=../fizz/fizz
++ local 'extra_flags=-DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF'
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -S ../fizz/fizz
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:52 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBUNWIND)
+  does not match the name of the calling package (LibUnwind).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  /tmp/third-party/fizz/build/fbcode_builder/CMake/FindLibUnwind.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  /tmp/third-party/fizz/build/fbcode_builder/CMake/FindGlog.cmake:44 (find_package)
+  CMakeLists.txt:56 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (librt) does
+  not match the name of the calling package (Librt).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  cmake/FindLibrt.cmake:12 (find_package_handle_standard_args)
+  CMakeLists.txt:60 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (libevent)
+  does not match the name of the calling package (Libevent).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  cmake/FindLibevent.cmake:16 (find_package_handle_standard_args)
+  CMakeLists.txt:99 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/facebook/mvfst v2026.01.19.00 quic
++ local repo_url=https://github.com/facebook/mvfst
++ local repo_tag=v2026.01.19.00
++ local library_name=quic
++ local extra_flags=
++ clean_third_party quic
++ local library_name=quic
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e quic ']'
++ git clone --depth 1 -b v2026.01.19.00 https://github.com/facebook/mvfst quic
+Cloning into 'quic'...
+Note: switching to 'f5960aeab7dfde2b222ff0d2554cc5f676baa5ba'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../quic/quic
++ '[' -f quic/CMakeLists.txt ']'
++ source_dir=../quic
++ '[' -f quic/build/cmake/CMakeLists.txt ']'
++ '[' -f quic/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../quic ''
++ local source_dir=../quic
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../quic
+CMake Warning (dev) at CMakeLists.txt:44 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:55 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/fizz-config.cmake:60 (find_dependency)
+  CMakeLists.txt:56 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (glog) does
+  not match the name of the calling package (Glog).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  cmake/FindGlog.cmake:14 (find_package_handle_standard_args)
+  CMakeLists.txt:57 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/facebook/wangle.git v2026.01.19.00 wangle -DBUILD_TESTS=OFF
++ local repo_url=https://github.com/facebook/wangle.git
++ local repo_tag=v2026.01.19.00
++ local library_name=wangle
++ local extra_flags=-DBUILD_TESTS=OFF
++ clean_third_party wangle
++ local library_name=wangle
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e wangle ']'
++ git clone --depth 1 -b v2026.01.19.00 https://github.com/facebook/wangle.git wangle
+Cloning into 'wangle'...
+Note: switching to '0b416f3415b63c8eb8e868559d5298f91d3eae19'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../wangle/wangle
++ '[' -f wangle/CMakeLists.txt ']'
++ '[' -f wangle/build/cmake/CMakeLists.txt ']'
++ '[' -f wangle/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../wangle/wangle -DBUILD_TESTS=OFF
++ local source_dir=../wangle/wangle
++ local extra_flags=-DBUILD_TESTS=OFF
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -DBUILD_TESTS=OFF -S ../wangle/wangle
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:67 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/fizz-config.cmake:60 (find_dependency)
+  CMakeLists.txt:69 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBUNWIND)
+  does not match the name of the calling package (LibUnwind).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  /tmp/third-party/wangle/build/fbcode_builder/CMake/FindLibUnwind.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  /tmp/third-party/wangle/build/fbcode_builder/CMake/FindGlog.cmake:44 (find_package)
+  CMakeLists.txt:72 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (librt) does
+  not match the name of the calling package (Librt).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  cmake/FindLibrt.cmake:26 (find_package_handle_standard_args)
+  CMakeLists.txt:84 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ build_fb_oss_library https://github.com/facebook/fbthrift.git v2026.01.19.00 thrift
++ local repo_url=https://github.com/facebook/fbthrift.git
++ local repo_tag=v2026.01.19.00
++ local library_name=thrift
++ local extra_flags=
++ clean_third_party thrift
++ local library_name=thrift
++ [[ -z /pscratch/sd/e/egencer/sparsecomms/nccl-prefix ]]
++ '[' '' == 1 ']'
++ '[' '!' -e thrift ']'
++ git clone --depth 1 -b v2026.01.19.00 https://github.com/facebook/fbthrift.git thrift
+Cloning into 'thrift'...
+Note: switching to '6703ee890ae89ff265f4a43373b91e72322af64b'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
++ local source_dir=../thrift/thrift
++ '[' -f thrift/CMakeLists.txt ']'
++ source_dir=../thrift
++ '[' -f thrift/build/cmake/CMakeLists.txt ']'
++ '[' -f thrift/cmake_unofficial/CMakeLists.txt ']'
++ export LDFLAGS=-Wl,--allow-shlib-undefined
++ LDFLAGS=-Wl,--allow-shlib-undefined
++ [[ '' == 1 ]]
++ [[ 1 == 0 ]]
++ mkdir -p build-output
++ pushd build-output
++ do_cmake_build ../thrift ''
++ local source_dir=../thrift
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ../thrift
+CMake Warning (dev) at CMakeLists.txt:60 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:97 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake:441 (message):
+  The package name passed to `find_package_handle_standard_args` (LIBUNWIND)
+  does not match the name of the calling package (LibUnwind).  This can lead
+  to problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  build/fbcode_builder/CMake/FindLibUnwind.cmake:22 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  build/fbcode_builder/CMake/FindGlog.cmake:44 (find_package)
+  CMakeLists.txt:111 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/fizz-config.cmake:60 (find_dependency)
+  CMakeLists.txt:112 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/mvfst/mvfst-config.cmake:44 (find_dependency)
+  CMakeLists.txt:117 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/mvfst/mvfst-config.cmake:47 (find_dependency)
+  CMakeLists.txt:117 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at thrift/lib/CMakeLists.txt:17 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_C_COMPILER
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_INSTALL_LIBDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ popd
++ [[ -z '' ]]
++ build_comms_tracing_service
++ local include_prefix=comms/analyzer/if
++ local base_dir=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse
++ local build_dir=/tmp/build/comms_tracing_service
++ mkdir -p /tmp/build/comms_tracing_service
++ pushd /tmp/build/comms_tracing_service
++ mkdir -p comms/analyzer/if
++ cp -r /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/analyzer/if/CMakeLists.txt /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/analyzer/if/CommsTracingService.thrift /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/analyzer/if/NCCLAnalyzerState.thrift /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/analyzer/if/NCCLAnalyzerVerdict.thrift comms/analyzer/if
++ mv comms/analyzer/if/CMakeLists.txt .
++ cp -r /tmp/third-party/thrift/build .
++ cat
++ cd build
++ do_cmake_build ..
++ local source_dir=..
++ local extra_flags=
++ rm -f CMakeCache.txt
++ rm -rf CMakeFiles
+++ command -v gcc
+++ command -v g++
++ cmake -G Ninja -DCMAKE_C_COMPILER=/opt/cray/pe/gcc-native/13/bin/gcc -DCMAKE_CXX_COMPILER=/opt/cray/pe/gcc-native/13/bin/g++ -DCMAKE_PREFIX_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_PREFIX=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DCMAKE_MODULE_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix:/global/common/software/nersc9/cmake/3.30.2:/global/common/software/nersc9/nccl/2.24.3 -DCMAKE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix -DBIN_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/bin -DLIB_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DINCLUDE_INSTALL_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_INCLUDEDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include -DCMAKE_INSTALL_LIBDIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_POLICY_VERSION_MINIMUM=3.22 -S ..
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/mvfst/mvfst-config.cmake:44 (find_dependency)
+  build/fbcode_builder/CMake/FBThriftConfig.cmake:5 (find_package)
+  CMakeLists.txt:34 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/folly-config.cmake:59 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/fizz-config.cmake:60 (find_dependency)
+  /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/mvfst/mvfst-config.cmake:45 (find_dependency)
+  build/fbcode_builder/CMake/FBThriftConfig.cmake:5 (find_package)
+  CMakeLists.txt:34 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /global/common/software/nersc9/cmake/3.30.2-013e22751e86e490ff355f301911830bb34fc1e5/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake:76 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/cmake/mvfst/mvfst-config.cmake:47 (find_dependency)
+  build/fbcode_builder/CMake/FBThriftConfig.cmake:5 (find_package)
+  CMakeLists.txt:34 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    BIN_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+    CMAKE_INSTALL_INCLUDEDIR
+    CMAKE_POLICY_VERSION_MINIMUM
+    INCLUDE_INSTALL_DIR
+    LIB_INSTALL_DIR
+
+
++ ninja -j4
++ ninja -j4 install
++ popd
++ echo 'Generating nccl_cvars files...'
++ CVARS_DIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars
++ '[' '!' -f /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/extractcvars.py ']'
++ '[' '!' -f /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/nccl_cvars.yaml ']'
++ '[' '!' -f /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/nccl_cvars.cc.in ']'
++ python3 -
++ export NCCL_CVARS_OUTPUT_DIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars
++ NCCL_CVARS_OUTPUT_DIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars
++ python3 /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/extractcvars.py
++ '[' '!' -f /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/nccl_cvars.h ']'
++ '[' '!' -f /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars/nccl_cvars.cc ']'
++ echo 'Successfully generated nccl_cvars files in /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/comms/utils/cvars'
++ export PKG_CONFIG_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/pkgconfig
++ PKG_CONFIG_PATH=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/pkgconfig
++ THRIFT_SERVICE_LDFLAGS=("-l:libcomms_tracing_service.a" "-Wl,--start-group" "-l:libasync.a" "-l:libconcurrency.a" "-l:libthrift-core.a" "-l:libthriftanyrep.a" "-l:libthriftcpp2.a" "-l:libthriftmetadata.a" "-l:libthriftprotocol.a" "-l:libthrifttype.a" "-l:libthrifttyperep.a" "-l:librpcmetadata.a" "-l:libruntime.a" "-l:libserverdbginfo.a" "-l:libtransport.a" "-l:libcommon.a" "-Wl,--end-group" "-l:libwangle.a" "-l:libfizz.a" "-l:libxxhash.a")
++ THIRD_PARTY_LDFLAGS+='-l:libcomms_tracing_service.a -Wl,--start-group -l:libasync.a -l:libconcurrency.a -l:libthrift-core.a -l:libthriftanyrep.a -l:libthriftcpp2.a -l:libthriftmetadata.a -l:libthriftprotocol.a -l:libthrifttype.a -l:libthrifttyperep.a -l:librpcmetadata.a -l:libruntime.a -l:libserverdbginfo.a -l:libtransport.a -l:libcommon.a -Wl,--end-group -l:libwangle.a -l:libfizz.a -l:libxxhash.a '
+++ pkg-config --libs --static libfolly
++ THIRD_PARTY_LDFLAGS+='-L/pscratch/sd/e/egencer/sparsecomms/nccl-prefix//pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -lfolly /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libdouble-conversion.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libglog.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libevent.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libz.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libssl.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libcrypto.a -ldl /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libzstd.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libsodium.a -ldl '
++ [[ -z '' ]]
++ THIRD_PARTY_LDFLAGS+='-l:libglog.a -l:libgflags.a -l:libboost_context.a -l:libfmt.a -l:libssl.a -l:libcrypto.a'
++ echo '-l:libcomms_tracing_service.a -Wl,--start-group -l:libasync.a -l:libconcurrency.a -l:libthrift-core.a -l:libthriftanyrep.a -l:libthriftcpp2.a -l:libthriftmetadata.a -l:libthriftprotocol.a -l:libthrifttype.a -l:libthrifttyperep.a -l:librpcmetadata.a -l:libruntime.a -l:libserverdbginfo.a -l:libtransport.a -l:libcommon.a -Wl,--end-group -l:libwangle.a -l:libfizz.a -l:libxxhash.a -L/pscratch/sd/e/egencer/sparsecomms/nccl-prefix//pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -lfolly /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libdouble-conversion.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libglog.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libevent.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libz.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libssl.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libcrypto.a -ldl /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libzstd.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libsodium.a -ldl -l:libglog.a -l:libgflags.a -l:libboost_context.a -l:libfmt.a -l:libssl.a -l:libcrypto.a'
++ [[ -z '' ]]
++ IFS=,
++ read -ra arch_array
++ arch_gencode=
++ for arch in "${arch_array[@]}"
++ case "$arch" in
++ arch_gencode=' -gencode=arch=compute_80,code=sm_80'
++ for arch in "${arch_array[@]}"
++ case "$arch" in
++ arch_gencode=' -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_100,code=sm_100'
++ NVCC_GENCODE=' -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_100,code=sm_100'
++ '[' 0 == 1 ']'
++ mkdir -p /pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/build/ncclx
++ pushd /global/common/software/nersc9/nccl/2.24.3
++ [[ -z '' ]]
++ build_nccl
++ make VERBOSE=1 -j4 src.build BUILDDIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse/build/ncclx 'NVCC_GENCODE= -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_100,code=sm_100' CUDA_HOME=/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/cuda/12.9 NCCL_HOME=/global/common/software/nersc9/nccl/2.24.3 NCCL_SUFFIX=x-git-de9ed6b NCCL_FP8=1 BASE_DIR=/pscratch/sd/e/egencer/sparsecomms/torchcomms-sparse CONDA_INCLUDE_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/include CONDA_LIB_DIR=/pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib 'THIRD_PARTY_LDFLAGS=-l:libcomms_tracing_service.a -Wl,--start-group -l:libasync.a -l:libconcurrency.a -l:libthrift-core.a -l:libthriftanyrep.a -l:libthriftcpp2.a -l:libthriftmetadata.a -l:libthriftprotocol.a -l:libthrifttype.a -l:libthrifttyperep.a -l:librpcmetadata.a -l:libruntime.a -l:libserverdbginfo.a -l:libtransport.a -l:libcommon.a -Wl,--end-group -l:libwangle.a -l:libfizz.a -l:libxxhash.a -L/pscratch/sd/e/egencer/sparsecomms/nccl-prefix//pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib -lfolly /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libdouble-conversion.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libglog.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libevent.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libz.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libssl.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libcrypto.a -ldl /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libzstd.a /pscratch/sd/e/egencer/sparsecomms/nccl-prefix/lib/libsodium.a -ldl -l:libglog.a -l:libgflags.a -l:libboost_context.a -l:libfmt.a -l:libssl.a -l:libcrypto.a' CUDARTLIB=cudart_static
+make: *** No rule to make target 'src.build'.  Stop.

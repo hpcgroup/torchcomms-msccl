@@ -14,6 +14,7 @@
 #include "profiler.h"
 #include "transport.h"
 #include "cpuset.h"
+#include "msccl_engine.h"
 
 #include <sys/syscall.h>
 #include <assert.h>
@@ -437,6 +438,9 @@ static ncclResult_t ProxyAppend(struct ncclProxyProgressState* state, struct ncc
   struct ncclProxyConnection* connection = op->connection;
   int shared = connection->shared;
   struct ncclProxyArgs* args = *connection->proxyAppendPtr;
+
+  INFO(NCCL_ALL, "MSCCL ProxyAppend: ch=%d peer=%d nsteps=%d nbytes=%zu sliceSteps=%d chunkSteps=%d pattern=%d opCount=%lu shared=%d",
+       op->channelId, op->peer, op->nsteps, (size_t)op->nbytes, op->sliceSteps, op->chunkSteps, op->pattern, (unsigned long)op->opCount, shared);
 
   if (args) {
     if (shared && args->opCount == op->opCount) {
@@ -998,16 +1002,74 @@ void* ncclProxyProgress(void *proxyState_) {
 
 ncclResult_t ncclProxyStart(struct ncclComm* comm) {
   struct ncclProxyOps* proxyOps = comm->proxyState->proxyOps;
-  if (proxyOps == NULL) return ncclSuccess;
+  if (proxyOps == NULL) { INFO(NCCL_ALL, "MSCCL ncclProxyStart: proxyOps is NULL, nothing to do"); return ncclSuccess; }
   TIME_START(1);
+  int posted = 0;
   for (int r = 0; r < comm->sharedRes->tpNLocalRanks; r++) {
     struct ncclProxyOps* ops = proxyOps + r;
     if (ops->pool == NULL || ops->nextOps == -1) continue;
+    INFO(NCCL_ALL, "MSCCL ncclProxyStart: posting ops for localRank %d, nextOps=%d, count=%d", r, ops->nextOps, ops->count);
     NCCLCHECK(ncclProxyPost(ops->pool, ops->nextOps, ops->nextOpsEnd));
     ops->nextOps = ops->nextOpsEnd = -1;
     ops->count = 0;
+    posted++;
   }
+  INFO(NCCL_ALL, "MSCCL ncclProxyStart: posted to %d local ranks", posted);
   TIME_STOP(1);
+  return ncclSuccess;
+}
+
+ncclResult_t ncclMscclProxySaveOp(struct ncclComm* comm, int channelId, int peer,
+                                   int type, int nsteps, uint64_t opCount,
+                                   ncclDataType_t dtype, ncclRedOp_t redOp) {
+  struct ncclChannel* channel = &comm->channels[channelId];
+  if (peer < 0 || peer >= comm->nRanks) {
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d (out of range, nRanks=%d)", channelId, peer, comm->nRanks);
+    return ncclSuccess;
+  }
+  struct ncclChannelPeer* peerComm = channel->peers[peer];
+  if (!peerComm) {
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d (peerComm NULL)", channelId, peer);
+    return ncclSuccess;
+  }
+  struct ncclConnector* connector = (type == proxyRecv) ? &peerComm->recv[0] : &peerComm->send[0];
+  if (connector->transportComm == NULL) {
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s (transportComm NULL)", channelId, peer, type==0?"recv":"send");
+    return ncclSuccess;
+  }
+  if (connector->proxyConn.proxyProgress == NULL) {
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s (proxyProgress NULL — NVLink?)", channelId, peer, type==0?"recv":"send");
+    return ncclSuccess;
+  }
+
+  int stepSize = comm->buffSizes[NCCL_PROTO_SIMPLE] / NCCL_STEPS;
+  uint8_t sliceSteps = MSCCL_ENGINE_SLICESTEPS;
+  uint8_t chunkSteps = MSCCL_ENGINE_CHUNKSTEPS;
+  size_t chunkSize = (size_t)stepSize * chunkSteps;
+  size_t sliceSize = (size_t)stepSize * sliceSteps;
+
+  struct ncclProxyOp op = {};
+  op.channelId   = channelId;
+  op.peer        = peer;
+  op.nsteps      = nsteps;
+  op.nbytes      = sliceSize;
+  op.chunkSize   = chunkSize;
+  op.sliceSize   = sliceSize;
+  op.sliceSteps  = sliceSteps;
+  op.chunkSteps  = chunkSteps;
+  op.protocol    = NCCL_PROTO_SIMPLE;
+  op.dtype       = dtype;
+  op.redOp       = redOp;
+  op.pattern     = (type == proxyRecv) ? ncclPatternRecv : ncclPatternSend;
+  op.coll        = ncclFuncAllReduce;
+  op.opCount     = opCount;
+  op.root        = peer;
+  op.rank        = comm->rank;
+  op.nChannels   = 1;
+  op.nPeers      = 1;
+  INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: POST ch=%d peer=%d dir=%s nsteps=%d sliceSteps=%d chunkSteps=%d nbytes=%zu stepSize=%d opCount=%lu",
+       channelId, peer, type==0?"recv":"send", nsteps, sliceSteps, chunkSteps, sliceSize, stepSize, (unsigned long)opCount);
+  NCCLCHECK(ncclLocalOpAppend(comm, &connector->proxyConn, &op));
   return ncclSuccess;
 }
 

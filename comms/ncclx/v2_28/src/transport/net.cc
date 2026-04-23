@@ -1240,6 +1240,8 @@ static_assert(NCCL_STEPS <= NCCL_NET_MAX_REQUESTS, "Not enough net requests to c
 static ncclResult_t sendProxyProgress(struct ncclProxyState* proxyState, struct ncclProxyArgs* args) {
   int checkedNetAttr = 0;
   if (args->state == ncclProxyOpReady) {
+    INFO(NCCL_ALL, "MSCCL sendProxyProgress INIT: nsubs=%d nsteps=%d sliceSteps=%d chunkSteps=%d nChannels=%d nPeers=%d protocol=%d dtype=%d redOp=%d pattern=%d",
+         args->nsubs, args->subs[0].nsteps, args->sliceSteps, args->chunkSteps, args->nChannels, args->nPeers, args->protocol, args->dtype, args->redOp, args->pattern);
     for (int s=0; s<args->nsubs; s++) {
       struct ncclProxySubArgs* sub = args->subs+s;
       struct sendNetResources* resources = (struct sendNetResources*) (sub->connection->transportResources);
@@ -1402,6 +1404,8 @@ static ncclResult_t sendProxyProgress(struct ncclProxyState* proxyState, struct 
 static ncclResult_t recvProxyProgress(struct ncclProxyState* proxyState, struct ncclProxyArgs* args) {
   int checkedNetAttr = 0;
   if (args->state == ncclProxyOpReady) {
+    INFO(NCCL_ALL, "MSCCL recvProxyProgress INIT: nsubs=%d nsteps=%d sliceSteps=%d chunkSteps=%d nChannels=%d nPeers=%d protocol=%d dtype=%d redOp=%d pattern=%d",
+         args->nsubs, args->subs[0].nsteps, args->sliceSteps, args->chunkSteps, args->nChannels, args->nPeers, args->protocol, args->dtype, args->redOp, args->pattern);
     // Initialize subs and group them by same recvComm.
     void* recvComm;
     int groupSize = 0;

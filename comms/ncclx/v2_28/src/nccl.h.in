@@ -484,6 +484,15 @@ ncclResult_t  pncclAllReduceSparseBlock(const void* sendbuff, const int64_t* rec
     size_t blockLength, void* recvbuff, size_t recvCount, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm, cudaStream_t stream);
 
 /*
+ * AllReduce using the MSCCL interpreter engine.
+ * Requires ncclMscclEngineAddAlgo() to have been called (or auto-loaded via
+ * MSCCL_REGISTER_ALGO) before first use.
+ */
+ncclResult_t ncclAllReduceMsccl(const void* sendbuff, void* recvbuff,
+    size_t count, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm,
+    cudaStream_t stream);
+
+/*
  * (deprecated) Broadcast (in-place)
  *
  * Copies count values from root to all other devices.
