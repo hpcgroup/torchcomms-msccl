@@ -197,20 +197,23 @@ ncclResult_t ncclAllReduceMscclImpl(const void *sendbuff, void *recvbuff,
     const struct mscclEngineAlgo *hostAlgo = e->hostAlgo;
     int stepSizeElts = comm->buffSizes[NCCL_PROTO_SIMPLE] / NCCL_STEPS / ncclTypeSize(datatype);
     ssize_t sizePerChunk = count / e->nChunksPerLoop;
-    int outerIters = (stepSizeElts > 0) ? ((sizePerChunk + stepSizeElts - 1) / stepSizeElts) : 1;
-    ssize_t chunkSizeElts = (ssize_t)(comm->buffSizes[NCCL_PROTO_SIMPLE] / NCCL_STEPS / ncclTypeSize(datatype))
-                           * MSCCL_ENGINE_CHUNKSTEPS;
+    ssize_t chunkSizeElts = (ssize_t)stepSizeElts * MSCCL_ENGINE_CHUNKSTEPS;
     ssize_t realChunkSize = (sizePerChunk < chunkSizeElts) ? sizePerChunk : chunkSizeElts;
-    int fifosPerCall = (stepSizeElts > 0) ? ((int)((realChunkSize + stepSizeElts - 1) / stepSizeElts)) : 1;
-    if (fifosPerCall < 1) fifosPerCall = 1;
+    // Kernel iterates `for (gridOff=0; gridOff<sizePerChunk; gridOff+=chunkSize)`
+    // with chunkSize == chunkSizeElts, so outer iters must be measured in chunk-
+    // size units, not stepSize units.
+    int outerIters = (chunkSizeElts > 0)
+                     ? (int)((sizePerChunk + chunkSizeElts - 1) / chunkSizeElts)
+                     : 1;
+    if (outerIters < 1) outerIters = 1;
 
     uint64_t proxyOpCount = uint64_t(comm->sharedRes->collOpCount++) << 1;
 
     INFO(NCCL_ALL, "MSCCL proxy: rank=%d msgBytes=%zu nBlocks=%d nChunksPerLoop=%d "
-         "stepSizeElts=%d sizePerChunk=%ld outerIters=%d chunkSizeElts=%ld realChunkSize=%ld fifosPerCall=%d "
+         "stepSizeElts=%d sizePerChunk=%ld outerIters=%d chunkSizeElts=%ld realChunkSize=%ld chunkSteps=%d "
          "buffSize[SIMPLE]=%d NCCL_STEPS=%d",
          comm->rank, msgBytes, hostAlgo->nBlocks, e->nChunksPerLoop,
-         stepSizeElts, (long)sizePerChunk, outerIters, (long)chunkSizeElts, (long)realChunkSize, fifosPerCall,
+         stepSizeElts, (long)sizePerChunk, outerIters, (long)chunkSizeElts, (long)realChunkSize, MSCCL_ENGINE_CHUNKSTEPS,
          comm->buffSizes[NCCL_PROTO_SIMPLE], NCCL_STEPS);
     for (int b = 0; b < hostAlgo->nBlocks; b++) {
       const struct mscclEngineThreadBlock *tb = &hostAlgo->mscclTBs[b];
@@ -241,7 +244,11 @@ ncclResult_t ncclAllReduceMscclImpl(const void *sendbuff, void *recvbuff,
                          type == MSCCL_ENGINE_RECV_REDUCE_COPY ||
                          type == MSCCL_ENGINE_RECV_REDUCE_COPY_SEND);
            if ((dir == 1 && isSend) || (dir == 0 && isRecv)) {
-             netSteps += (int)tb->transmissions[s].count * fifosPerCall * MSCCL_ENGINE_SLICESTEPS;
+             // Each prims.send/recv of one chunk-sized chunk advances the proxy
+             // step counter by MSCCL_ENGINE_CHUNKSTEPS (= SlicePerChunk *
+             // StepPerSlice). The IR's per-transmission `count` says how many
+             // chunk-sized calls the kernel makes for this op.
+             netSteps += (int)tb->transmissions[s].count * MSCCL_ENGINE_CHUNKSTEPS;
            }
         }
         if (netSteps == 0) continue;
@@ -267,10 +274,10 @@ ncclResult_t ncclAllReduceMscclImpl(const void *sendbuff, void *recvbuff,
 
     for (int i = 0; i < nSeen; i++) {
       INFO(NCCL_ALL, "MSCCL proxy[%d]: ch=%d peer=%d dir=%s nsteps=%d opCount=%lu "
-           "stepSizeElts=%d outerIters=%d fifosPerCall=%d sizePerChunk=%ld chunkSizeElts=%ld realChunkSize=%ld",
+           "stepSizeElts=%d outerIters=%d chunkSteps=%d sizePerChunk=%ld chunkSizeElts=%ld realChunkSize=%ld",
            i, seen[i].ch, seen[i].peer, seen[i].dir==0?"recv":"send",
            seen[i].nsteps, (unsigned long)proxyOpCount,
-           stepSizeElts, outerIters, fifosPerCall,
+           stepSizeElts, outerIters, MSCCL_ENGINE_CHUNKSTEPS,
            (long)sizePerChunk, (long)chunkSizeElts, (long)realChunkSize);
       NCCLCHECK(ncclMscclProxySaveOp(comm, seen[i].ch, seen[i].peer, seen[i].dir,
                                         seen[i].nsteps, proxyOpCount, datatype, op));

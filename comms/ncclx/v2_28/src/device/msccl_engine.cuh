@@ -219,6 +219,10 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
       realChunkSize = min(chunkSize, sizePerChunk - gridOff);
       realChunkSize = roundUp(realChunkSize,
                               (ssize_t)(nthreads * sizeof(uint64_t) / sizeof(T)));
+      // Keep slices within one buffer slot; recv proxy posts irecv of size
+      // stepSize*sliceSteps (== chunkSize / SlicePerChunk * SlicePerChunk),
+      // and roundUp can overshoot chunkSize when granularity doesn't divide it.
+      realChunkSize = min(realChunkSize, chunkSize);
     } else {
       realChunkSize = min(chunkSize,
                           divUp(sizePerChunk - gridOff, minChunkSize) * minChunkSize);

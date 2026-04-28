@@ -983,6 +983,11 @@ static ncclResult_t sendProxyConnect(struct ncclProxyConnection* connection, str
   //NCCLCHECK(netDumpMap(map));
   if (respSize != sizeof(struct connectMap)) return ncclInternalError;
   memcpy(respBuff, map, sizeof(struct connectMap));
+  INFO(NCCL_ALL, "MSCCL sendProxyConnect DONE: tpRank=%d shared=%d useGdr=%d "
+                "buffSizes={LL=%d,LL128=%d,SIMPLE=%d} buffers[SIMPLE]=%p mhandles[SIMPLE]=%p netSendComm=%p",
+       resources->tpRank, resources->shared, resources->useGdr,
+       resources->buffSizes[NCCL_PROTO_LL], resources->buffSizes[NCCL_PROTO_LL128], resources->buffSizes[NCCL_PROTO_SIMPLE],
+       resources->buffers[NCCL_PROTO_SIMPLE], resources->mhandles[NCCL_PROTO_SIMPLE], resources->netSendComm);
   return ncclSuccess;
 }
 
@@ -1146,6 +1151,11 @@ static ncclResult_t recvProxyConnect(struct ncclProxyConnection* connection, str
   //NCCLCHECK(netDumpMap(map));
   if (respSize != sizeof(struct connectMap)) return ncclInternalError;
   memcpy(respBuff, map, sizeof(struct connectMap));
+  INFO(NCCL_ALL, "MSCCL recvProxyConnect DONE: tpRemoteRank=%d shared=%d useGdr=%d "
+                "buffSizes={LL=%d,LL128=%d,SIMPLE=%d} buffers[SIMPLE]=%p mhandles[SIMPLE]=%p netRecvComm=%p",
+       resources->tpRemoteRank, resources->shared, resources->useGdr,
+       resources->buffSizes[NCCL_PROTO_LL], resources->buffSizes[NCCL_PROTO_LL128], resources->buffSizes[NCCL_PROTO_SIMPLE],
+       resources->buffers[NCCL_PROTO_SIMPLE], resources->mhandles[NCCL_PROTO_SIMPLE], resources->netRecvComm);
   return ncclSuccess;
 }
 
@@ -1347,6 +1357,24 @@ static ncclResult_t sendProxyProgress(struct ncclProxyState* proxyState, struct 
             void* phandle = &sub->pHandles[DIVUP(transmittedStepId, args->sliceSteps)%NCCL_STEPS];
             if (!checkedNetAttr++)
               setXferNetAttrs(proxyState, args, 1);
+            {
+              static __thread int dbgSendCalls = 0;
+              if (dbgSendCalls < 8 || (sub->transmitted % 256) == 0) {
+                dbgSendCalls++;
+                INFO(NCCL_ALL, "MSCCL isend[call=%d] netSendComm=%p buff=%p size=%d tag(tpRank)=%d mhandle=%p "
+                              "sub: reg=%d nbytes=%zu transmitted=%ld posted=%ld done=%ld base=%ld nsteps=%d ringAlgo=%p "
+                              "args: protocol=%d sliceSteps=%d chunkSteps=%d pattern=%d "
+                              "res: buffSizes[p]=%d stepSize=%d shared=%d useGdr=%d "
+                              "connFifo[%d].size=%d",
+                     dbgSendCalls,
+                     resources->netSendComm, buff, size, resources->tpRank, sub->sendMhandle,
+                     sub->reg, (size_t)sub->nbytes, (long)sub->transmitted, (long)sub->posted, (long)sub->done, (long)sub->base, sub->nsteps,
+                     (void*)sub->ringAlgo,
+                     args->protocol, args->sliceSteps, args->chunkSteps, args->pattern,
+                     resources->buffSizes[args->protocol], stepSize, resources->shared, resources->useGdr,
+                     buffSlot, connFifo[buffSlot].size);
+              }
+            }
             NCCLCHECK(proxyState->ncclNet->isend(resources->netSendComm, buff, size, resources->tpRank, sub->sendMhandle, phandle, sub->requests+buffSlot));
             if (sub->requests[buffSlot] != NULL) {
               TRACE(NCCL_NET, "sendProxy [%ld/%d/%d] Isend posted, req %p, buff %p, size %d, proto %d, myRank %d, channelId %d, mhandle %p", sub->transmitted, buffSlot, sub->nsteps, sub->requests[buffSlot], buff, size, p, proxyState->tpRank, sub->channelId, sub->sendMhandle);
@@ -1367,6 +1395,14 @@ static ncclResult_t sendProxyProgress(struct ncclProxyState* proxyState, struct 
         int size;
         int buffSlot = (sub->base+sub->done)%NCCL_STEPS;
         NCCLCHECK(proxyState->ncclNet->test(sub->requests[buffSlot], &done, &size));
+        {
+          static __thread int dbgSendTest = 0;
+          if (done && dbgSendTest < 8) {
+            dbgSendTest++;
+            INFO(NCCL_ALL, "MSCCL isend-complete[%d] buffSlot=%d done=%d remoteAckSize=%d sub_done=%ld sub_transmitted=%ld",
+                 dbgSendTest, buffSlot, done, size, (long)sub->done, (long)sub->transmitted);
+          }
+        }
         if (done) {
           // Make sure size is reset to -1 before we update the head.
           connFifo[buffSlot].size = -1;
@@ -1514,7 +1550,40 @@ static ncclResult_t recvProxyProgress(struct ncclProxyState* proxyState, struct 
         if (!checkedNetAttr++)
           setXferNetAttrs(proxyState, args, 0);
         if (ignoreCompletion) *requestPtr = (void *)NCCL_NET_OPTIONAL_RECV_COMPLETION;
+        {
+          // MSCCL DEBUG: log first few irecv calls per progress thread so we
+          // can see exactly what we hand to the OFI plugin. Rate-limit by step.
+          static __thread int dbgRecvCalls = 0;
+          if (dbgRecvCalls < 8 || (subGroup->posted % 256) == 0) {
+            dbgRecvCalls++;
+            for (int i = 0; i < subCount; i++) {
+              struct ncclProxySubArgs* dsub = subGroup + i;
+              struct recvNetResources* dres = (struct recvNetResources*) (dsub->connection->transportResources);
+              int dStepSize = dres ? (dres->buffSizes[args->protocol] / NCCL_STEPS) : -1;
+              INFO(NCCL_ALL, "MSCCL irecv[call=%d sub=%d] netRecvComm=%p ptr=%p size=%zu tag=%d mhandle=%p "
+                            "sub: reg=%d nbytes=%zu posted=%ld base=%ld nsteps=%d ringAlgo=%p "
+                            "args: protocol=%d sliceSteps=%d chunkSteps=%d pattern=%d "
+                            "res: buffSizes[p]=%d stepSize=%d shared=%d useGdr=%d tpRemoteRank=%d",
+                   dbgRecvCalls, i,
+                   resources->netRecvComm, ptrs[i], sizes[i], tags[i], mhandles[i],
+                   dsub->reg, (size_t)dsub->nbytes, (long)dsub->posted, (long)dsub->base, dsub->nsteps,
+                   (void*)dsub->ringAlgo,
+                   args->protocol, args->sliceSteps, args->chunkSteps, args->pattern,
+                   dres ? dres->buffSizes[args->protocol] : -1, dStepSize,
+                   dres ? dres->shared : -1, dres ? dres->useGdr : -1,
+                   dres ? dres->tpRemoteRank : -1);
+            }
+          }
+        }
         NCCLCHECK(proxyState->ncclNet->irecv(resources->netRecvComm, subCount, ptrs, sizes, tags, mhandles, phandles, requestPtr));
+        {
+          static __thread int dbgRecvPosted = 0;
+          if (dbgRecvPosted < 4) {
+            dbgRecvPosted++;
+            INFO(NCCL_ALL, "MSCCL irecv[posted=%d] requestPtr=%p *requestPtr=%p (NULL means plugin queued without handle)",
+                 dbgRecvPosted, (void*)requestPtr, *requestPtr);
+          }
+        }
         if (*requestPtr) {
           subGroup->recvRequestsCache[step%NCCL_STEPS] = *requestPtr;
           subGroup->recvRequestsSubCount = subCount;
@@ -1543,6 +1612,15 @@ static ncclResult_t recvProxyProgress(struct ncclProxyState* proxyState, struct 
         void* mhandles[NCCL_PROXY_MAX_SUBS];
         for (int i=0; i<NCCL_PROXY_MAX_SUBS; i++) sizes[i] = 0;
         NCCLCHECK(proxyState->ncclNet->test(subGroup->requests[step%NCCL_STEPS], &done, sizes));
+        {
+          static __thread int dbgRecvTest = 0;
+          if (done && dbgRecvTest < 8) {
+            dbgRecvTest++;
+            INFO(NCCL_ALL, "MSCCL irecv-complete[%d] step=%lu done=%d sizes[0..3]={%d,%d,%d,%d} groupSize=%d nsteps=%d",
+                 dbgRecvTest, (unsigned long)step, done, sizes[0], sizes[1], sizes[2], sizes[3],
+                 subGroup->groupSize, subGroup->nsteps);
+          }
+        }
         if (done) {
           int needFlush = 0;
           int totalSize = 0;

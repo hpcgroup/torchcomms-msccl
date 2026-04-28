@@ -97,7 +97,7 @@ ifeq ($(DEBUG), 0)
 NVCUFLAGS += -O3
 CXXFLAGS  += -O3 -g
 else
-NVCUFLAGS += -O0 -G -g
+NVCUFLAGS += -O0 -lineinfo -g
 CXXFLAGS  += -O0 -g -ggdb3
 endif
 

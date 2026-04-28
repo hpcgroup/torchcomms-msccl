@@ -1067,8 +1067,14 @@ ncclResult_t ncclMscclProxySaveOp(struct ncclComm* comm, int channelId, int peer
   op.rank        = comm->rank;
   op.nChannels   = 1;
   op.nPeers      = 1;
-  INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: POST ch=%d peer=%d dir=%s nsteps=%d sliceSteps=%d chunkSteps=%d nbytes=%zu stepSize=%d opCount=%lu",
-       channelId, peer, type==0?"recv":"send", nsteps, sliceSteps, chunkSteps, sliceSize, stepSize, (unsigned long)opCount);
+  INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: POST ch=%d peer=%d dir=%s nsteps=%d sliceSteps=%d chunkSteps=%d nbytes=%zu stepSize=%d opCount=%lu "
+                "comm->buffSizes={LL=%d,LL128=%d,SIMPLE=%d} connected=%d connector=%p proxyConn.proxyProgress=%p proxyConn.connection=%p",
+       channelId, peer, type==0?"recv":"send", nsteps, sliceSteps, chunkSteps, sliceSize, stepSize, (unsigned long)opCount,
+       comm->buffSizes[NCCL_PROTO_LL], comm->buffSizes[NCCL_PROTO_LL128], comm->buffSizes[NCCL_PROTO_SIMPLE],
+       connector->connected,
+       (void*)connector,
+       (void*)connector->proxyConn.proxyProgress,
+       (void*)connector->proxyConn.connection);
   NCCLCHECK(ncclLocalOpAppend(comm, &connector->proxyConn, &op));
   return ncclSuccess;
 }
@@ -1089,6 +1095,7 @@ ncclResult_t ncclProxyProgressDestroy(struct ncclProxyState* proxyState) {
   if (state->opsPool) {
     pthread_mutex_lock(&state->opsPool->mutex);
     state->stop = 1;
+    state->active = nullptr;
     pthread_cond_signal(&state->opsPool->cond);
     pthread_mutex_unlock(&state->opsPool->mutex);
     PTHREADCHECK(pthread_join(state->thread, NULL), "pthread_join");
