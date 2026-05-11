@@ -28,7 +28,7 @@
 #define MSCCL_ENGINE_CUH_
 
 #include "device.h"       /* ncclShmemData, ncclShmem, NCCL_MAX_NTHREADS, … */
-#include "primitives.h"   /* Primitives<>, FanAsymmetric<>, ProtoSimple<> */
+#include "primitives.h"   /* Primitives<>, FanAsymmetric<>, ProtoSimple/LL/LL128 */
 #include "collectives.h"  /* reduce_kernel helpers (BytePack, applyReduce, …) */
 #include "include/msccl_engine.h"
 
@@ -37,6 +37,14 @@
 /*
  * Flag = lexicographic (workIndex, iter, step) packed into a uint64.
  * A TB is "ahead" of another iff its flag is numerically larger.
+ *
+ * Note: the encoding is intentionally STEP-level, not stripe-level. When
+ * nStripes>1 the data work for a step is split across stripes, but the
+ * cross-block dependency flag is published only after the LAST stripe
+ * finishes that step (and waited on only at the FIRST stripe). This keeps
+ * step-level IR dep semantics intact: a consumer waiting on (iter, step)
+ * never observes a partial-step state, which would be incorrect when the
+ * IR's dep edges assume the full count for a step has been committed.
  */
 #define MSCCL_ENGINE_FLAG(wi, iter, step) \
   ((uint64_t)(wi) * (MSCCL_ENGINE_MAX_ITER * (uint64_t)MSCCL_ENGINE_MAX_STEPS) \
@@ -45,6 +53,31 @@
 
 #define MSCCL_ENGINE_WORKINDEX_FROM_FLAG(f) \
   ((f) / ((uint64_t)MSCCL_ENGINE_MAX_ITER * MSCCL_ENGINE_MAX_STEPS))
+
+/* PTX volatile load/store for cross-block flags — bypasses L1 cache.
+ * Mirrors the upstream MSCCL load()/store() helpers. */
+__device__ __forceinline__ static uint64_t
+mscclEngineFlagLoad(volatile struct mscclEngineFlag *flags, int bid) {
+  uint64_t v;
+  asm volatile("ld.volatile.global.b64 %0,[%1];"
+               : "=l"(v) : "l"((uint64_t*)&flags[bid].flag));
+  return v;
+}
+
+__device__ __forceinline__ static void
+mscclEngineFlagStore(volatile struct mscclEngineFlag *flags, int bid, uint64_t val) {
+  asm volatile("st.volatile.global.b64 [%0],%1;"
+               :: "l"((uint64_t*)&flags[bid].flag), "l"(val));
+}
+
+template<typename Prim, typename Proto>
+__device__ __forceinline__ static void
+mscclEngineSendWithBarrier(Prim& prims, intptr_t srcOff, int nelem, int nthreads) {
+  prims.send(srcOff, nelem);
+  if constexpr (Proto::Id == NCCL_PROTO_LL) {
+    barrier_sync(15, nthreads);
+  }
+}
 
 /* (removed — replaced by msccl_tbCopy for all shmem loads) */
 
@@ -195,12 +228,17 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
     minChunkSize = nthreads * (Proto::calcBytePerGrain() / (ssize_t)sizeof(T)) / 2;
 
   /* ── Primitives instance (FanAsymmetric<1,1>, Direct=0, no P2p) ──────── */
+  /* connIndex{Recv,Send} address peers[peer]->{recv,send}[connIndex]; multiple
+   * TBs sharing the same (channel, peer, dir) tuple must use distinct slots
+   * (host-side ncclMscclEngineAddAlgo computes them). When all four (algos
+   * with no sharing, e.g. tiny) values are zero this collapses to the default
+   * single-FIFO-per-pair path. */
   RedOp redFn(work.redOpArg);
-  Primitives<T, RedOp, FanAsymmetric<1,1>, 0,
-             ProtoSimple<MSCCL_ENGINE_CHUNKSTEPS/MSCCL_ENGINE_SLICESTEPS,
-                         MSCCL_ENGINE_SLICESTEPS>, 0>
+  Primitives<T, RedOp, FanAsymmetric<1,1>, 0, Proto, 0>
     prims(tid, nthreads, &recvPeer, &sendPeer,
-          thisInput, thisOutput, work.redOpArg);
+          thisInput, thisOutput, work.redOpArg,
+          /*group=*/0,
+          sharedTB.connIndexRecv, sharedTB.connIndexSend);
 
   /* ── synchronisation flags ────────────────────────────────────────────── */
   const int64_t workIndex = (int64_t)work.workIndex;
@@ -208,6 +246,13 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
 
   const ssize_t sizePerChunk  = (ssize_t)work.sizePerMscclChunk;
   const uint32_t maxCount     = work.maxAllowedCount;
+  /* nStripes >=1: per outer iter we walk the IR `nStripes` times and on the
+   * k-th pass each step processes only count-chunks [k*count/nStripes,
+   * (k+1)*count/nStripes). Caps per-stripe-per-conn slot pressure to
+   * ceil(count/nStripes)*chunkSteps <= NCCL_STEPS, breaking the symmetric
+   * send-first deadlock. nStripes=1 is the fast path (host-side trigger
+   * computes pre-recv send pressure per TB and only sets >1 when needed). */
+  const int nStripes = max(1, (int)work.nStripes);
 
   /* ── outer loop: iterate over the full message in chunkSize pieces ─────── */
   for (ssize_t gridOff = 0, iter = 0;
@@ -230,131 +275,182 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
     realChunkSize = (ssize_t)(int)realChunkSize;
     const int nelem = (int)min(realChunkSize, sizePerChunk - gridOff);
 
-    /* ── inner loop: execute each step ──────────────────────────────────── */
-    int step = 0;
-    for (int i = 0; i < (int)sharedTB.nSteps; i++) {
-      const struct mscclEngineTransmission *t = &sharedTB.transmissions[i];
+    /* ── stripe loop: each stripe replays the IR walk on its own slice of
+     * every step's count, but cross-block dep waits and flag publishes are
+     * STEP-LEVEL (gated to first/last stripe). The intra-stripe interleave
+     * of send-then-recv-then-send-... is what breaks the symmetric send-first
+     * cycle; cross-TB ordering still observes step atomicity, matching the
+     * IR's step-level dep semantics. */
+    const int lastStripe = nStripes - 1;
+    for (int stripe = 0; stripe < nStripes; stripe++) {
+      const bool isFirstStripe = (stripe == 0);
+      const bool isLastStripe  = (stripe == lastStripe);
 
-      /* cross-block dependency wait */
-      int16_t numDeps = t->numDependencies;
-      if (numDeps > 0) {
-        if (tid < numDeps) {
-          int16_t depPtr  = t->dependencePointer;
-          int8_t  depBid  = sharedTB.dependentBid[depPtr + tid];
-          int16_t depStep = sharedTB.dependentStep[depPtr + tid];
-          uint64_t goal   = MSCCL_ENGINE_FLAG(workIndex, iter, depStep);
-          while (true) {
-            uint64_t cur = ((volatile struct mscclEngineFlag*)mscclFlags)[depBid].flag;
-            if (cur >= goal && MSCCL_ENGINE_WORKINDEX_FROM_FLAG(cur) == (uint64_t)workIndex)
-              break;
-          }
-        }
-        step += numDeps - 1;
-        __syncthreads();
-      }
+      /* ── inner loop: execute each IR step. The count-split loop stays
+       * inside the step, restricted to this stripe's contiguous slice. */
+      int step = 0;
+      for (int i = 0; i < (int)sharedTB.nSteps; i++) {
+        const struct mscclEngineTransmission *t = &sharedTB.transmissions[i];
 
-      /* buffer pointer selection */
-      const T *srcPtr =
-        (t->srcBuffer == MSCCL_ENGINE_INPUT_BUF)   ? thisInput  :
-        (t->srcBuffer == MSCCL_ENGINE_OUTPUT_BUF)   ? thisOutput : thisScratch;
-      T *dstPtr =
-        (t->dstBuffer == MSCCL_ENGINE_INPUT_BUF)   ? const_cast<T*>(thisInput)  :
-        (t->dstBuffer == MSCCL_ENGINE_OUTPUT_BUF)   ? thisOutput : thisScratch;
-
-      /* update Primitives' data pointers for this step */
-      prims.setDataPtrs(srcPtr, dstPtr, work.redOpArg, nullptr, 0, sendPeer);
-
-      /* execute the opcode, potentially in maxCount chunks */
-      int count = (int)t->count;
-      for (int c = 0; c < count; c += (int)maxCount) {
-        ssize_t srcOff = gridOff + (ssize_t)(t->srcOffset + c) * sizePerChunk;
-        ssize_t dstOff = gridOff + (ssize_t)(t->dstOffset + c) * sizePerChunk;
-        const int thisCount = min((int)maxCount, count - c);
-        const int thisNelem = nelem * thisCount;
-
-        switch (t->type) {
-          case MSCCL_ENGINE_SEND:
-            prims.send(srcOff, thisNelem);
-            break;
-
-          case MSCCL_ENGINE_RECV:
-            prims.recv(dstOff, thisNelem);
-            break;
-
-          case MSCCL_ENGINE_REDUCE: {
-            /* manual per-element reduce (no network) */
-            int numRed = (int)t->numReductions;
-            ssize_t dstOff2 = gridOff + (ssize_t)(t->dstOffset + c) * sizePerChunk;
-            int curr = tid;
-            const int elPerPack16 = 16 / (int)sizeof(T);
-            while (curr < thisNelem / elPerPack16) {
-              msccl_reduce<T, RedOp, 16>(c, numRed, curr, sizePerChunk, redFn,
-                                         t, gridOff, srcOff, dstOff2,
-                                         srcPtr, dstPtr, sharedTB);
-              curr += nthreads;
+        /* cross-block dependency wait — only on the first stripe; consumers
+         * observe step as "done" only after the producer's full count is
+         * committed (publish at lastStripe), so once we've waited, the dep
+         * is satisfied for every stripe of this step. */
+        int16_t numDeps = t->numDependencies;
+        if (numDeps > 0) {
+          if (isFirstStripe && tid < numDeps) {
+            int16_t depPtr  = t->dependencePointer;
+            int8_t  depBid  = sharedTB.dependentBid[depPtr + tid];
+            int16_t depStep = sharedTB.dependentStep[depPtr + tid];
+            uint64_t goal   = MSCCL_ENGINE_FLAG(workIndex, iter, depStep);
+            while (true) {
+              uint64_t cur = mscclEngineFlagLoad(mscclFlags, depBid);
+              if (cur >= goal &&
+                  MSCCL_ENGINE_WORKINDEX_FROM_FLAG(cur) == (uint64_t)workIndex)
+                break;
             }
-            curr = tid + (thisNelem / elPerPack16) * elPerPack16;
-            if (curr < thisNelem)
-              msccl_reduce<T, RedOp, (int)sizeof(T)>(
-                c, numRed, curr, sizePerChunk, redFn,
-                t, gridOff, srcOff, dstOff2, srcPtr, dstPtr, sharedTB);
-            __syncthreads();
-            if (c == 0) step += numRed - 1;
-            break;
+          }
+          /* step counter advance is uniform across stripes (the IR's step
+           * encoding is fixed by the producer-side flag layout). */
+          step += numDeps - 1;
+          if (isFirstStripe) __syncthreads();
+        }
+
+        /* buffer pointer selection */
+        const T *srcPtr =
+          (t->srcBuffer == MSCCL_ENGINE_INPUT_BUF)   ? thisInput  :
+          (t->srcBuffer == MSCCL_ENGINE_OUTPUT_BUF)   ? thisOutput : thisScratch;
+        T *dstPtr =
+          (t->dstBuffer == MSCCL_ENGINE_INPUT_BUF)   ? const_cast<T*>(thisInput)  :
+          (t->dstBuffer == MSCCL_ENGINE_OUTPUT_BUF)   ? thisOutput : thisScratch;
+
+        /* This stripe's slice of count: contiguous range
+         * [stripeStart, stripeEnd). Even split with remainder absorbed by
+         * later stripes via floor of (stripe+1)*count. */
+        const int count       = (int)t->count;
+        const int stripeStart = (count * stripe) / nStripes;
+        const int stripeEnd   = (count * (stripe + 1)) / nStripes;
+        const int stripeSpan  = stripeEnd - stripeStart;
+
+        if (stripeSpan > 0) {
+          /* update Primitives' data pointers for this step */
+          if constexpr (Proto::Id == NCCL_PROTO_SIMPLE) {
+            prims.setDataPtrs(srcPtr, dstPtr, work.redOpArg, nullptr, 0, sendPeer);
+          } else {
+            prims.setDataPtrs(srcPtr, dstPtr);
           }
 
-          case MSCCL_ENGINE_LOCAL_COPY:
-            /* intra-GPU copy — no network primitives needed */
-            for (int j = tid; j < thisNelem; j += nthreads)
-              dstPtr[dstOff + j] = srcPtr[srcOff + j];
-            __syncthreads();
-            break;
+          for (int c = stripeStart; c < stripeEnd; c += (int)maxCount) {
+            ssize_t srcOff = gridOff + (ssize_t)(t->srcOffset + c) * sizePerChunk;
+            ssize_t dstOff = gridOff + (ssize_t)(t->dstOffset + c) * sizePerChunk;
+            const int thisCount = min((int)maxCount, stripeEnd - c);
+            const int thisNelem = nelem * thisCount;
 
-          case MSCCL_ENGINE_RECV_COPY_SEND:
-            prims.recvCopySend(dstOff, thisNelem);
-            break;
-          case MSCCL_ENGINE_RECV_REDUCE_SEND:
-            prims.recvReduceSend(srcOff, thisNelem);
-            break;
-          case MSCCL_ENGINE_RECV_REDUCE_COPY:
-            prims.recvReduceCopy(srcOff, dstOff, thisNelem);
-            break;
-          case MSCCL_ENGINE_RECV_REDUCE_COPY_SEND:
-            prims.recvReduceCopySend(srcOff, dstOff, thisNelem);
-            break;
-          default:
-            return; /* unknown opcode — bail */
-        } /* switch type */
-      } /* for c */
+            switch (t->type) {
+              case MSCCL_ENGINE_SEND:
+                mscclEngineSendWithBarrier<decltype(prims), Proto>(
+                  prims, srcOff, thisNelem, nthreads);
+                break;
 
-      /* raise cross-block flag when this step is a dependency source */
-      if (t->hasDependence && tid == nthreads - 1) {
-        __threadfence();
-        ((volatile struct mscclEngineFlag*)mscclFlags)[bid].flag =
-          MSCCL_ENGINE_FLAG(workIndex, iter, step);
-      }
-      step++;
-    } /* for i (steps) */
+              case MSCCL_ENGINE_RECV:
+                prims.recv(dstOff, thisNelem);
+                break;
+
+              case MSCCL_ENGINE_REDUCE: {
+                /* manual per-element reduce (no network) */
+                int numRed = (int)t->numReductions;
+                ssize_t dstOff2 = gridOff + (ssize_t)(t->dstOffset + c) * sizePerChunk;
+                int curr = tid;
+                const int elPerPack16 = 16 / (int)sizeof(T);
+                while (curr < thisNelem / elPerPack16) {
+                  msccl_reduce<T, RedOp, 16>(c, numRed, curr, sizePerChunk, redFn,
+                                             t, gridOff, srcOff, dstOff2,
+                                             srcPtr, dstPtr, sharedTB);
+                  curr += nthreads;
+                }
+                curr = tid + (thisNelem / elPerPack16) * elPerPack16;
+                if (curr < thisNelem)
+                  msccl_reduce<T, RedOp, (int)sizeof(T)>(
+                    c, numRed, curr, sizePerChunk, redFn,
+                    t, gridOff, srcOff, dstOff2, srcPtr, dstPtr, sharedTB);
+                __syncthreads();
+                break;
+              }
+
+              case MSCCL_ENGINE_LOCAL_COPY:
+                /* intra-GPU copy — no network primitives needed */
+                for (int j = tid; j < thisNelem; j += nthreads)
+                  dstPtr[dstOff + j] = srcPtr[srcOff + j];
+                __syncthreads();
+                break;
+
+              case MSCCL_ENGINE_RECV_COPY_SEND:
+                prims.recvCopySend(dstOff, thisNelem);
+                break;
+              case MSCCL_ENGINE_RECV_REDUCE_SEND:
+                prims.recvReduceSend(srcOff, thisNelem);
+                break;
+              case MSCCL_ENGINE_RECV_REDUCE_COPY:
+                prims.recvReduceCopy(srcOff, dstOff, thisNelem);
+                break;
+              case MSCCL_ENGINE_RECV_REDUCE_COPY_SEND:
+                prims.recvReduceCopySend(srcOff, dstOff, thisNelem);
+                break;
+              case MSCCL_ENGINE_NOP:
+                break;
+              default:
+                return; /* unknown opcode — bail */
+            } /* switch type */
+          } /* for c */
+        } /* if stripeSpan > 0 */
+
+        /* Step counter advance for REDUCE's reduction-fan: applied uniformly
+         * across stripes (must match producer-side encoding). The original
+         * `if (c == 0) step += numRed - 1` fired once per IR step regardless
+         * of count, so we replicate that — once per (stripe, step). */
+        if (t->type == MSCCL_ENGINE_REDUCE) {
+          step += (int)t->numReductions - 1;
+        }
+
+        /* Raise cross-block flag for dep-source steps — only on the LAST
+         * stripe, after the full count for this step has been processed.
+         * Consumers waiting on (iter, step) thus never observe a partial
+         * step state, preserving the IR's step-atomic dep semantics. */
+        if (isLastStripe && t->hasDependence && tid == nthreads - 1) {
+          __threadfence();
+          mscclEngineFlagStore(mscclFlags, bid,
+                               MSCCL_ENGINE_FLAG(workIndex, iter, step));
+        }
+        step++;
+      } /* for i (steps) */
+    } /* for stripe */
   } /* for gridOff (chunks) */
 }
 
 /* ── Kernel entry-point macro ─────────────────────────────────────────────
  *
- * Generates one __global__ kernel per (RedOp, T) pair (Simple proto only).
+ * Generates one __global__ kernel per (RedOp, T, Proto) triple.
  * The kernel packs all per-launch parameters into mscclEngineWork to keep
  * the argument list short.
  */
-#define MSCCL_ENGINE_KERNEL(devredop, type)                                    \
-__global__ void mscclEngineKernel_##devredop##_##type(                         \
+using MscclProtoSimple =
+  ProtoSimple<MSCCL_ENGINE_CHUNKSTEPS/MSCCL_ENGINE_SLICESTEPS,
+              MSCCL_ENGINE_SLICESTEPS>;
+
+#define MSCCL_ENGINE_KERNEL_PROTO(devredop, type, protoName, protoType)         \
+__global__ void mscclEngineKernel_##devredop##_##type##_##protoName(            \
     struct ncclKernelCommAndChannels *commAndChans,                             \
     const struct mscclEngineAlgo     *algo,                                    \
     struct mscclEngineWork            work)                                    \
 {                                                                               \
-  mscclRunEngine<type, Func##devredop<type>,                                   \
-                 ProtoSimple<MSCCL_ENGINE_CHUNKSTEPS/MSCCL_ENGINE_SLICESTEPS,  \
-                             MSCCL_ENGINE_SLICESTEPS>>                         \
+  mscclRunEngine<type, Func##devredop<type>, protoType>                         \
     (commAndChans, algo, work);                                                 \
 }
+
+#define MSCCL_ENGINE_KERNEL(devredop, type)                                    \
+  MSCCL_ENGINE_KERNEL_PROTO(devredop, type, Simple, MscclProtoSimple)          \
+  MSCCL_ENGINE_KERNEL_PROTO(devredop, type, LL, ProtoLL)                       \
+  MSCCL_ENGINE_KERNEL_PROTO(devredop, type, LL128, ProtoLL128)
 
 #define MSCCL_ENGINE_KERNELS_FOR_DEVREDOP(devredop)   \
   MSCCL_ENGINE_KERNEL(devredop, int8_t)               \
@@ -374,11 +470,16 @@ __global__ void mscclEngineKernel_##devredop##_##type(                         \
   MSCCL_ENGINE_KERNELS_FOR_DEVREDOP(MinMax)
 
 /* Declarations (usable from host-side launch code): */
-#define MSCCL_ENGINE_DECL_KERNEL(devredop, type)                               \
-__global__ void mscclEngineKernel_##devredop##_##type(                         \
+#define MSCCL_ENGINE_DECL_KERNEL_PROTO(devredop, type, protoName)              \
+__global__ void mscclEngineKernel_##devredop##_##type##_##protoName(           \
     struct ncclKernelCommAndChannels *commAndChans,                             \
     const struct mscclEngineAlgo     *algo,                                    \
     struct mscclEngineWork            work);
+
+#define MSCCL_ENGINE_DECL_KERNEL(devredop, type)                               \
+  MSCCL_ENGINE_DECL_KERNEL_PROTO(devredop, type, Simple)                       \
+  MSCCL_ENGINE_DECL_KERNEL_PROTO(devredop, type, LL)                           \
+  MSCCL_ENGINE_DECL_KERNEL_PROTO(devredop, type, LL128)
 
 #define MSCCL_ENGINE_DECL_KERNELS_FOR_DEVREDOP(devredop) \
   MSCCL_ENGINE_DECL_KERNEL(devredop, int8_t)             \

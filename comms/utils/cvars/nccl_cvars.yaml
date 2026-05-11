@@ -2861,3 +2861,13 @@ cvars:
    type        : int
    default     : 16
    description : Maximum number of channels to initialize for MSCCL algorithms.
+
+ - name        : NCCL_MSCCL_NUM_CONNS_PER_PEER
+   type        : int
+   default     : 2
+   description : |
+     Number of distinct connection slots (peers[peer]->{recv,send}[connIndex])
+     to allocate per (channel, peer, direction). Algorithms whose IR maps
+     multiple thread blocks to the same (channel, peer, dir) need >1 so each
+     TB owns its own FIFO. Hard-capped by NCCL_MAX_CONNS (=2). Default 2
+     covers all currently-shipped MSCCL algos.

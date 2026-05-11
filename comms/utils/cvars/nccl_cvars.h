@@ -1007,6 +1007,9 @@ extern int64_t NCCL_MNNVL_UUID_DEFAULTCVARVALUE;
 extern int NCCL_MSCCL_MAX_CHANNELS;
 extern int NCCL_MSCCL_MAX_CHANNELS_DEFAULTCVARVALUE;
 
+extern int NCCL_MSCCL_NUM_CONNS_PER_PEER;
+extern int NCCL_MSCCL_NUM_CONNS_PER_PEER_DEFAULTCVARVALUE;
+
 extern int64_t NCCL_NCHANNELS_PER_NET_PEER;
 extern int64_t NCCL_NCHANNELS_PER_NET_PEER_DEFAULTCVARVALUE;
 
@@ -1426,7 +1429,7 @@ extern double __NCCL_UNIT_TEST_DOUBLE_CVAR__;
 extern double __NCCL_UNIT_TEST_DOUBLE_CVAR___DEFAULTCVARVALUE;
 
 namespace ncclx {
-constexpr std::array<std::string_view, 422> cvarNames = {
+constexpr std::array<std::string_view, 423> cvarNames = {
     "CTRAN_P2P_NVL_DEVMEM_MAX_CHUNKS",
     "CUDA_LAUNCH_BLOCKING",
     "MASTER_ADDR",
@@ -1718,6 +1721,7 @@ constexpr std::array<std::string_view, 422> cvarNames = {
     "NCCL_MNNVL_TRUNK_DISABLE",
     "NCCL_MNNVL_UUID",
     "NCCL_MSCCL_MAX_CHANNELS",
+    "NCCL_MSCCL_NUM_CONNS_PER_PEER",
     "NCCL_NCHANNELS_PER_NET_PEER",
     "NCCL_NET",
     "NCCL_NETDEVS_POLICY",

@@ -74,8 +74,6 @@ static mscclKernelFn selectKernel(ncclDevRedOp_t devOp, ncclDataType_t dt) {
 /* ── find the best size entry for a given message size ──────────────────── */
 static const struct mscclEngineSizeEntry *
 selectSizeEntry(const struct mscclEngineState *s, size_t msgBytes) {
-  /* Prefer exact-range match; fall back to the entry whose maxBytes is
-   * smallest but still >= msgBytes (closest upper bound). */
   const struct mscclEngineSizeEntry *best = nullptr;
   for (int i = 0; i < s->nSizes; i++) {
     const struct mscclEngineSizeEntry *e = &s->sizes[i];
@@ -85,16 +83,15 @@ selectSizeEntry(const struct mscclEngineState *s, size_t msgBytes) {
     }
   }
   if (best) return best;
-  /* No range match: pick entry with smallest maxBytes > msgBytes. */
   for (int i = 0; i < s->nSizes; i++) {
     const struct mscclEngineSizeEntry *e = &s->sizes[i];
-    if (e->maxBytes >= msgBytes)
+    if (msgBytes <= e->maxBytes) {
       if (!best || e->maxBytes < best->maxBytes)
         best = e;
+    }
   }
-  /* Last resort: largest algo. */
-  if (!best && s->nSizes > 0) best = &s->sizes[s->nSizes - 1];
-  return best;
+  if (best) return best;
+  return &s->sizes[s->nSizes-1];
 }
 
 /* ── ensure scratch buffer >= bytes ─────────────────────────────────────── */

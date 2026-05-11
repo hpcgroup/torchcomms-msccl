@@ -34,8 +34,8 @@ void mscclLaunchKernel(mscclKernelFn kfn, int nBlocks, int nThreads, int smem,
                        struct ncclKernelCommAndChannels *commAndChans,
                        const struct mscclEngineAlgo *algo,
                        struct mscclEngineWork work);
-/* devOp: ncclDevRedOp_t cast to int; dt: ncclDataType_t cast to int */
-mscclKernelFn mscclSelectKernel(int devOp, int dt);
+/* devOp: ncclDevRedOp_t cast to int; dt: ncclDataType_t cast to int; proto: NCCL_PROTO_* */
+mscclKernelFn mscclSelectKernel(int devOp, int dt, int proto);
 #ifdef __cplusplus
 }
 #endif
@@ -50,6 +50,21 @@ struct mscclEngineSizeEntry {
   int32_t nBlocks;
   int32_t nChunksPerLoop;
   int32_t nScratchChunks;
+  int32_t protocol;
+  /* Per-TB connection-slot indices (mirror what was written to devAlgo). The
+   * host-side proxy-save loop must dispatch ops to the same peers[peer]->
+   * {recv,send}[ci] FIFO that the kernel TB will read/write, otherwise the
+   * proxy never advances slot 1 and any TB on slot 1 hangs. */
+  uint8_t connIndexRecv[MSCCL_ENGINE_MAX_TBS];
+  uint8_t connIndexSend[MSCCL_ENGINE_MAX_TBS];
+  /* FIFO-stripe count chosen at AddAlgo time. >=1; 1 means "no striping"
+   * (today's behavior). >1 when some TB's pre-recv send pressure on any
+   * connection exceeds NCCL_STEPS — both ranks would otherwise queue more
+   * outbound slots than the FIFO holds before either reaches its recv,
+   * causing a symmetric circular wait. The kernel splits each step's count
+   * across this many stripes per outer iter so the per-stripe-per-conn slot
+   * pressure stays <= NCCL_STEPS. */
+  uint16_t nStripes;
 };
 
 struct mscclEngineState {

@@ -30,6 +30,16 @@
 #define MSCCL_ENGINE_MAX_TBS         64    /* max thread blocks per rank */
 #define MSCCL_ENGINE_MAX_COUNT       72    /* max chunks per transmission */
 #define MSCCL_ENGINE_MAX_REDUCE_FUSION 16
+/* Max FIFO-stripes per outer iteration. The kernel splits each IR step's
+ * count across `nStripes` stripes when a TB's pre-recv send pressure on any
+ * connection exceeds NCCL_STEPS, breaking the symmetric send-first deadlock
+ * (both ranks queueing more sends than the FIFO holds before either reaches
+ * its recv step). 64 covers count up to MSCCL_ENGINE_MAX_COUNT=72 with
+ * Simple's chunkSteps=4 (worst case nStripes = ceil(72*4/NCCL_STEPS=8) = 36).
+ * Cross-block dep flags remain step-level (see MSCCL_ENGINE_FLAG in
+ * msccl_engine.cuh): consumers see a step as "done" only after the producer's
+ * last stripe finishes, preserving the IR's step-atomic dep semantics. */
+#define MSCCL_ENGINE_MAX_STRIPES     64
 
 #define MSCCL_ENGINE_SLICESTEPS      2     /* NCCL_STEPS/4 = 8/4 */
 #define MSCCL_ENGINE_CHUNKSTEPS      4     /* NCCL_STEPS/2 = 8/2 */
@@ -84,7 +94,14 @@ struct alignas(16) mscclEngineThreadBlock {
   int16_t recvPeer;   /* -1 = no recv for this TB */
   uint16_t nSteps;
   int16_t  channelId; /* NCCL channel this TB is bound to; -1 for local-copy TBs */
-  uint8_t  _pad[8];   /* pad to 16-byte alignment for uint4 copies */
+  /* Connection index slots for the FIFOs this TB uses. Multiple TBs may share
+   * the same (channelId, peer, dir) tuple; each must address a distinct
+   * peers[peer]->{recv,send}[connIndex] to avoid corrupting the FIFO. Computed
+   * host-side in ncclMscclEngineAddAlgo; codegen leaves these zero, which
+   * matches algos where each (channel, peer, dir) is owned by one TB. */
+  uint8_t  connIndexRecv;
+  uint8_t  connIndexSend;
+  uint8_t  _pad[6];   /* pad to 16-byte alignment for uint4 copies */
 };
 
 static_assert(sizeof(struct mscclEngineThreadBlock) % 16 == 0,
@@ -125,9 +142,14 @@ struct alignas(16) mscclEngineWork {
   uint32_t    workIndex;  /* used to construct unique flag values */
   uint32_t    maxAllowedCount;
   int         nChunksPerLoop;
+  /* Number of FIFO-stripes per outer iteration (>=1). Each stripe processes
+   * a contiguous slice of every IR step's count. Computed at AddAlgo time so
+   * peer ranks agree (the IR is symmetric so rank-local analysis suffices).
+   * 1 = today's behavior (no striping). */
+  uint16_t    nStripes;
   int8_t      hasReduce;
   int8_t      redOpArgIsPtr;
-  uint8_t     _pad[6];
+  uint8_t     _pad[4];
 };
 static_assert(sizeof(struct mscclEngineWork) % 16 == 0,
               "mscclEngineWork must be 16-byte aligned");

@@ -41,7 +41,7 @@ SIZE_MAX  = (1 << 64) - 1   # used as "no upper bound" in registry
 _SIZE_UNITS = {'KB': 1024, 'MB': 1024**2, 'GB': 1024**3}
 
 def _size_from_stem(stem):
-    """Return target size in bytes inferred from stem like 'foo_8gpus_512MB'."""
+    """Return target size in bytes inferred from stem like foo_8gpus_512MB."""
     m = re.search(r'_(\d+)(KB|MB|GB)(?:_|$)', stem, re.IGNORECASE)
     if not m:
         return None
@@ -340,13 +340,13 @@ def codegen_interp(xml_path: str, out_dir: str,
     reg_min = min_bytes if min_bytes is not None else _auto_min
     reg_max = max_bytes if max_bytes is not None else _auto_max
 
-    assert ngpus <= MAX_TBS, f"ngpus={ngpus} exceeds MSCCL_ENGINE_MAX_TBS={MAX_TBS}"
-
     # Determine max TBs per rank and max steps per TB across all ranks.
     max_tbs_per_rank  = max(len(g['tbs']) for g in algo['gpus']) if algo['gpus'] else 0
     max_steps_per_tb  = max(
         (len(tb['steps']) for g in algo['gpus'] for tb in g['tbs']),
         default=0)
+    assert max_tbs_per_rank <= MAX_TBS, \
+        f"max TBs per rank {max_tbs_per_rank} exceeds MSCCL_ENGINE_MAX_TBS={MAX_TBS}"
     assert max_steps_per_tb <= MAX_STEPS, \
         f"max steps {max_steps_per_tb} exceeds MSCCL_ENGINE_MAX_STEPS={MAX_STEPS}"
 

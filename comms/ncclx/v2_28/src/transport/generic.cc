@@ -101,6 +101,14 @@ fail:
 }
 
 NCCL_PARAM(MscclMaxChannels, "MSCCL_MAX_CHANNELS", 16);
+// Number of distinct connection slots (peers[peer]->{recv,send}[connIndex])
+// to allocate per (channel, peer, direction). Algorithms whose IR maps
+// multiple thread blocks to the same (channel, peer, dir) — e.g. the
+// node-aware deepseekflash medium/large algos — need >1 so each TB owns
+// its own FIFO. Hard-capped by NCCL_MAX_CONNS (=2). Default 2: matches the
+// hard cap and unblocks all currently-shipped MSCCL algos at the cost of
+// allocating an extra (often unused) FIFO per pair.
+NCCL_PARAM(MscclNumConnsPerPeer, "MSCCL_NUM_CONNS_PER_PEER", 2);
 
 // Connect all rank pairs on all channels so any MSCCL algorithm (arbitrary
 // send/recv peer topology) works without per-launch transport init.
@@ -113,6 +121,10 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
     int maxCh = std::max(comm->nChannels, (int)ncclParamMscclMaxChannels());
     if (maxCh > MAXCHANNELS) maxCh = MAXCHANNELS;
 
+    int numConns = (int)ncclParamMscclNumConnsPerPeer();
+    if (numConns < 1) numConns = 1;
+    if (numConns > NCCL_MAX_CONNS) numConns = NCCL_MAX_CONNS;
+
     // Initialize channels beyond nChannels that MSCCL algos may need.
     for (int c = comm->nChannels; c < maxCh; c++) {
       if (comm->channels[c].id == -1) {
@@ -120,15 +132,25 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
       }
     }
 
-    for (int peer = 0; peer < comm->nRanks; peer++) {
-      if (peer == comm->rank) continue;
-      for (int c = 0; c < maxCh; c++) {
-        NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, 1, &peer, 1, &peer, 0), ret, fail);
+    /* Pass the ring graph so NET transport sets shared=0 even at connIndex>=1.
+     * net.cc::sendSetup forces shared=1 when (graph==NULL && connIndex!=0)
+     * which routes the connection through the PXN shared-buffer protocol —
+     * incompatible with our raw per-conn FIFO usage and segfaults the proxy
+     * progress thread on the first cross-node op. With graph non-null, the
+     * `graph || connIndex == 0` guard short-circuits and shared=0 for every
+     * connIndex, making slot 1 behave identically to slot 0. */
+    struct ncclTopoGraph* graph = &comm->graphs[NCCL_ALGO_RING];
+    for (int ci = 0; ci < numConns; ci++) {
+      for (int peer = 0; peer < comm->nRanks; peer++) {
+        if (peer == comm->rank) continue;
+        for (int c = 0; c < maxCh; c++) {
+          NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, 1, &peer, 1, &peer, ci), ret, fail);
+        }
       }
+      NCCLCHECKGOTO(ncclTransportP2pSetup(comm, graph, ci), ret, fail);
     }
-    NCCLCHECKGOTO(ncclTransportP2pSetup(comm, NULL, 0), ret, fail);
-    INFO(NCCL_INIT, "Connected MSCCL all-to-all channels (%d ranks x %d channels, nChannels=%d)",
-         comm->nRanks, maxCh, comm->nChannels);
+    INFO(NCCL_INIT, "Connected MSCCL all-to-all channels (%d ranks x %d channels x %d conns, nChannels=%d)",
+         comm->nRanks, maxCh, numConns, comm->nChannels);
   }
 exit:
   return ret;

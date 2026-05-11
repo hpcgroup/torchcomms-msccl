@@ -14,6 +14,7 @@
 #include "profiler.h"
 #include "transport.h"
 #include "cpuset.h"
+#include "device.h"
 #include "msccl_engine.h"
 
 #include <sys/syscall.h>
@@ -1020,32 +1021,44 @@ ncclResult_t ncclProxyStart(struct ncclComm* comm) {
 }
 
 ncclResult_t ncclMscclProxySaveOp(struct ncclComm* comm, int channelId, int peer,
-                                   int type, int nsteps, uint64_t opCount,
-                                   ncclDataType_t dtype, ncclRedOp_t redOp) {
+                                   int type, int connIndex,
+                                   int nsteps, uint64_t opCount,
+                                   ncclDataType_t dtype, ncclRedOp_t redOp,
+                                   int protocol) {
   struct ncclChannel* channel = &comm->channels[channelId];
   if (peer < 0 || peer >= comm->nRanks) {
     INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d (out of range, nRanks=%d)", channelId, peer, comm->nRanks);
     return ncclSuccess;
+  }
+  if (connIndex < 0 || connIndex >= NCCL_MAX_CONNS) {
+    WARN("MSCCL ncclMscclProxySaveOp: bad connIndex=%d (NCCL_MAX_CONNS=%d)", connIndex, NCCL_MAX_CONNS);
+    return ncclInvalidArgument;
   }
   struct ncclChannelPeer* peerComm = channel->peers[peer];
   if (!peerComm) {
     INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d (peerComm NULL)", channelId, peer);
     return ncclSuccess;
   }
-  struct ncclConnector* connector = (type == proxyRecv) ? &peerComm->recv[0] : &peerComm->send[0];
+  struct ncclConnector* connector = (type == proxyRecv) ? &peerComm->recv[connIndex] : &peerComm->send[connIndex];
   if (connector->transportComm == NULL) {
-    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s (transportComm NULL)", channelId, peer, type==0?"recv":"send");
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s ci=%d (transportComm NULL)", channelId, peer, type==0?"recv":"send", connIndex);
     return ncclSuccess;
   }
   if (connector->proxyConn.proxyProgress == NULL) {
-    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s (proxyProgress NULL — NVLink?)", channelId, peer, type==0?"recv":"send");
+    INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: SKIP ch=%d peer=%d dir=%s ci=%d (proxyProgress NULL — NVLink?)", channelId, peer, type==0?"recv":"send", connIndex);
     return ncclSuccess;
   }
 
-  int stepSize = comm->buffSizes[NCCL_PROTO_SIMPLE] / NCCL_STEPS;
-  uint8_t sliceSteps = MSCCL_ENGINE_SLICESTEPS;
-  uint8_t chunkSteps = MSCCL_ENGINE_CHUNKSTEPS;
+  if (protocol != NCCL_PROTO_SIMPLE && protocol != NCCL_PROTO_LL && protocol != NCCL_PROTO_LL128)
+    return ncclInvalidArgument;
+
+  int stepSize = comm->buffSizes[protocol] / NCCL_STEPS;
+  uint8_t sliceSteps = protocol == NCCL_PROTO_SIMPLE ? MSCCL_ENGINE_SLICESTEPS : 1;
+  uint8_t chunkSteps = protocol == NCCL_PROTO_SIMPLE ? MSCCL_ENGINE_CHUNKSTEPS : 1;
   size_t chunkSize = (size_t)stepSize * chunkSteps;
+  if (protocol == NCCL_PROTO_LL) chunkSize /= 2;
+  if (protocol == NCCL_PROTO_LL128)
+    chunkSize = (chunkSize / NCCL_LL128_LINEELEMS) * NCCL_LL128_DATAELEMS;
   size_t sliceSize = (size_t)stepSize * sliceSteps;
 
   struct ncclProxyOp op = {};
@@ -1054,10 +1067,10 @@ ncclResult_t ncclMscclProxySaveOp(struct ncclComm* comm, int channelId, int peer
   op.nsteps      = nsteps;
   op.nbytes      = sliceSize;
   op.chunkSize   = chunkSize;
-  op.sliceSize   = sliceSize;
+  op.sliceSize   = chunkSize / chunkSteps * sliceSteps;
   op.sliceSteps  = sliceSteps;
   op.chunkSteps  = chunkSteps;
-  op.protocol    = NCCL_PROTO_SIMPLE;
+  op.protocol    = protocol;
   op.dtype       = dtype;
   op.redOp       = redOp;
   op.pattern     = (type == proxyRecv) ? ncclPatternRecv : ncclPatternSend;
@@ -1067,9 +1080,9 @@ ncclResult_t ncclMscclProxySaveOp(struct ncclComm* comm, int channelId, int peer
   op.rank        = comm->rank;
   op.nChannels   = 1;
   op.nPeers      = 1;
-  INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: POST ch=%d peer=%d dir=%s nsteps=%d sliceSteps=%d chunkSteps=%d nbytes=%zu stepSize=%d opCount=%lu "
+  INFO(NCCL_ALL, "MSCCL ncclMscclProxySaveOp: POST ch=%d peer=%d dir=%s ci=%d nsteps=%d sliceSteps=%d chunkSteps=%d nbytes=%zu stepSize=%d opCount=%lu "
                 "comm->buffSizes={LL=%d,LL128=%d,SIMPLE=%d} connected=%d connector=%p proxyConn.proxyProgress=%p proxyConn.connection=%p",
-       channelId, peer, type==0?"recv":"send", nsteps, sliceSteps, chunkSteps, sliceSize, stepSize, (unsigned long)opCount,
+       channelId, peer, type==0?"recv":"send", connIndex, nsteps, sliceSteps, chunkSteps, sliceSize, stepSize, (unsigned long)opCount,
        comm->buffSizes[NCCL_PROTO_LL], comm->buffSizes[NCCL_PROTO_LL128], comm->buffSizes[NCCL_PROTO_SIMPLE],
        connector->connected,
        (void*)connector,
