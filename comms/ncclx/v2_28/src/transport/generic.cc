@@ -9,7 +9,12 @@
 #include "bootstrap.h"
 #include "channel.h"
 #include "param.h"
+#include "msccl_engine.h"
 #include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <dlfcn.h>
+#include <vector>
 
 #include "meta/transport/transportConnect.h"
 
@@ -110,15 +115,102 @@ NCCL_PARAM(MscclMaxChannels, "MSCCL_MAX_CHANNELS", 16);
 // allocating an extra (often unused) FIFO per pair.
 NCCL_PARAM(MscclNumConnsPerPeer, "MSCCL_NUM_CONNS_PER_PEER", 2);
 
-// Connect all rank pairs on all channels so any MSCCL algorithm (arbitrary
-// send/recv peer topology) works without per-launch transport init.
-// Also initializes channels beyond nChannels up to NCCL_MSCCL_MAX_CHANNELS
-// so that MSCCL algos requiring more channels than the auto-tuned ring/tree
-// count don't dereference NULL devPeers pointers.
+/* Sparse used-peer set computed by dlopening MSCCL_ALGO_PATH .so's at
+ * MsccConnect time and walking algos[myRank].mscclTBs. Avoids the
+ * O(nRanks × maxChannels × numConns) all-to-all that breaks the libfabric
+ * QP / pinned-mem budget past 64 GPUs.
+ *
+ * Symmetry is required: rank A's recv[c, B] must match rank B's send[c, A]
+ * (else P2pSetup hangs in bootstrap exchange at iteration i = (B-A) mod N).
+ * IR codegen produces symmetric algos so we trust this. */
+struct MscclUsedPeers {
+  bool valid;
+  int  maxChNeeded;      /* one past the highest channelId referenced */
+  std::vector<uint8_t> chanUsed;   /* size MAXCHANNELS */
+  std::vector<uint8_t> recv;       /* size MAXCHANNELS * nRanks */
+  std::vector<uint8_t> send;       /* size MAXCHANNELS * nRanks */
+};
+
+static MscclUsedPeers mscclLoadUsedPeerSet(struct ncclComm* comm) {
+  MscclUsedPeers up;
+  up.valid = false;
+  up.maxChNeeded = 0;
+
+  const char* pathEnv = getenv("MSCCL_ALGO_PATH");
+  if (!pathEnv || !pathEnv[0]) return up;
+
+  up.chanUsed.assign(MAXCHANNELS, 0);
+  up.recv.assign((size_t)MAXCHANNELS * comm->nRanks, 0);
+  up.send.assign((size_t)MAXCHANNELS * comm->nRanks, 0);
+
+  /* tokenize a local copy; strtok_r mutates */
+  std::vector<char> buf(strlen(pathEnv) + 1);
+  memcpy(buf.data(), pathEnv, buf.size());
+
+  int loaded = 0, skippedMismatched = 0;
+  char* save = nullptr;
+  for (char* tok = strtok_r(buf.data(), ":", &save); tok;
+            tok = strtok_r(nullptr, ":", &save)) {
+    void* h = dlopen(tok, RTLD_NOW | RTLD_LOCAL);
+    if (!h) continue;
+    const struct mscclAlgoDescriptor* desc =
+        (const struct mscclAlgoDescriptor*)dlsym(h, "msccl_algo_desc");
+    if (!desc || !desc->algos) {
+      dlclose(h);
+      continue;
+    }
+    if (desc->nranks != comm->nRanks) {
+      skippedMismatched++;
+      dlclose(h);
+      continue;
+    }
+    const struct mscclEngineAlgo* me = &desc->algos[comm->rank];
+    for (int b = 0; b < me->nBlocks; b++) {
+      const struct mscclEngineThreadBlock* tb = &me->mscclTBs[b];
+      int c = tb->channelId;
+      if (c < 0 || c >= MAXCHANNELS) continue;
+      up.chanUsed[c] = 1;
+      if (c + 1 > up.maxChNeeded) up.maxChNeeded = c + 1;
+      int rp = tb->recvPeer;
+      int sp = tb->sendPeer;
+      if (rp >= 0 && rp < comm->nRanks && rp != comm->rank)
+        up.recv[(size_t)c * comm->nRanks + rp] = 1;
+      if (sp >= 0 && sp < comm->nRanks && sp != comm->rank)
+        up.send[(size_t)c * comm->nRanks + sp] = 1;
+    }
+    dlclose(h);
+    loaded++;
+  }
+  if (loaded == 0) {
+    up.recv.clear(); up.send.clear(); up.chanUsed.clear();
+    if (skippedMismatched > 0) {
+      INFO(NCCL_INIT, "MSCCL sparse-connect: %d algo(s) skipped (nranks mismatch); "
+           "falling back to all-to-all", skippedMismatched);
+    }
+    return up;
+  }
+  up.valid = true;
+  return up;
+}
+
+// Connect rank pairs on all channels needed by MSCCL algorithms. When
+// MSCCL_ALGO_PATH is set and contains at least one descriptor matching
+// comm->nRanks, only the (channel, peer, dir) tuples actually referenced
+// by the algo IR are connected — saving up to (nRanks-1) × MAXCHANNELS ×
+// numConns wasted connections per rank at 128+ GPU scales. Falls back to
+// all-to-all (capped by NCCL_MSCCL_MAX_CHANNELS) when no descriptor is
+// available.
 ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
   ncclResult_t ret = ncclSuccess;
   if (comm && comm->nRanks > 1) {
-    int maxCh = std::max(comm->nChannels, (int)ncclParamMscclMaxChannels());
+    MscclUsedPeers used = mscclLoadUsedPeerSet(comm);
+
+    int maxCh;
+    if (used.valid) {
+      maxCh = std::max(comm->nChannels, used.maxChNeeded);
+    } else {
+      maxCh = std::max(comm->nChannels, (int)ncclParamMscclMaxChannels());
+    }
     if (maxCh > MAXCHANNELS) maxCh = MAXCHANNELS;
 
     int numConns = (int)ncclParamMscclNumConnsPerPeer();
@@ -126,7 +218,10 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
     if (numConns > NCCL_MAX_CONNS) numConns = NCCL_MAX_CONNS;
 
     // Initialize channels beyond nChannels that MSCCL algos may need.
+    // In sparse mode, only init channels that some TB references — others
+    // can stay uninitialized since we won't connect any peers on them.
     for (int c = comm->nChannels; c < maxCh; c++) {
+      if (used.valid && !used.chanUsed[c]) continue;
       if (comm->channels[c].id == -1) {
         NCCLCHECKGOTO(initChannel(comm, c), ret, fail);
       }
@@ -140,17 +235,70 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
      * `graph || connIndex == 0` guard short-circuits and shared=0 for every
      * connIndex, making slot 1 behave identically to slot 0. */
     struct ncclTopoGraph* graph = &comm->graphs[NCCL_ALGO_RING];
-    for (int ci = 0; ci < numConns; ci++) {
-      for (int peer = 0; peer < comm->nRanks; peer++) {
-        if (peer == comm->rank) continue;
-        for (int c = 0; c < maxCh; c++) {
-          NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, 1, &peer, 1, &peer, ci), ret, fail);
+    if (used.valid) {
+      /* Accumulate intra/inter-node tallies via connectionSummary so we can
+       * report per-rank net-fanout at INFO level. The per-(channel,peer,dir)
+       * setup is also logged by net.cc::{sendSetup,recvSetup} at NCCL_NET,
+       * but that's too verbose to enable in normal runs — this summary gives
+       * a one-line picture per rank to verify sparse-connect is doing what
+       * we expect (counts should match the algo IR's peer fan-out). */
+      connectionSummary cumSummary;
+      /* Per-channel usage counters: how many distinct peers this rank
+       * connects per channel, split intra/inter. Helps spot channel
+       * imbalance — a node-aware algo should show intra > 0 only on
+       * local-stage channels. */
+      std::vector<int> perChIntra(maxCh, 0), perChInter(maxCh, 0);
+      for (int ci = 0; ci < numConns; ci++) {
+        for (int peer = 0; peer < comm->nRanks; peer++) {
+          if (peer == comm->rank) continue;
+          bool sameNode = (comm->rankToNode[comm->rank] == comm->rankToNode[peer]);
+          for (int c = 0; c < maxCh; c++) {
+            if (!used.chanUsed[c]) continue;
+            int nrecv = used.recv[(size_t)c * comm->nRanks + peer] ? 1 : 0;
+            int nsend = used.send[(size_t)c * comm->nRanks + peer] ? 1 : 0;
+            if (!nrecv && !nsend) continue;
+            NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, nrecv, &peer, nsend, &peer, ci, &cumSummary), ret, fail);
+            if (ci == 0) {
+              if (sameNode) perChIntra[c] += (nrecv + nsend);
+              else          perChInter[c] += (nrecv + nsend);
+            }
+          }
         }
+        NCCLCHECKGOTO(ncclTransportP2pSetup(comm, graph, ci), ret, fail);
       }
-      NCCLCHECKGOTO(ncclTransportP2pSetup(comm, graph, ci), ret, fail);
+      INFO(NCCL_INIT|NCCL_NET,
+           "MSCCL sparse-connect summary: rank=%d nRanks=%d nChannels=%d maxCh=%d "
+           "numConns=%d intraSend=%d intraRecv=%d interSend=%d interRecv=%d",
+           comm->rank, comm->nRanks, comm->nChannels, maxCh, numConns,
+           cumSummary.intraSend, cumSummary.intraRecv,
+           cumSummary.interSend, cumSummary.interRecv);
+      /* Channel-by-channel breakdown — only log channels that actually have
+       * connections, to keep the line manageable at maxCh=32+. */
+      char chBuf[1024]; chBuf[0] = '\0';
+      size_t off = 0;
+      for (int c = 0; c < maxCh; c++) {
+        if (perChIntra[c] == 0 && perChInter[c] == 0) continue;
+        int w = snprintf(chBuf + off, sizeof(chBuf) - off,
+                         " ch%d=intra%d/inter%d", c, perChIntra[c], perChInter[c]);
+        if (w < 0 || (size_t)w >= sizeof(chBuf) - off) break;
+        off += (size_t)w;
+      }
+      INFO(NCCL_INIT|NCCL_NET,
+           "MSCCL sparse-connect per-channel (rank=%d, ci=0):%s",
+           comm->rank, chBuf);
+    } else {
+      for (int ci = 0; ci < numConns; ci++) {
+        for (int peer = 0; peer < comm->nRanks; peer++) {
+          if (peer == comm->rank) continue;
+          for (int c = 0; c < maxCh; c++) {
+            NCCLCHECKGOTO(ncclTransportP2pConnect(comm, c, 1, &peer, 1, &peer, ci), ret, fail);
+          }
+        }
+        NCCLCHECKGOTO(ncclTransportP2pSetup(comm, graph, ci), ret, fail);
+      }
+      INFO(NCCL_INIT, "Connected MSCCL all-to-all channels (%d ranks x %d channels x %d conns, nChannels=%d)",
+           comm->nRanks, maxCh, numConns, comm->nChannels);
     }
-    INFO(NCCL_INIT, "Connected MSCCL all-to-all channels (%d ranks x %d channels x %d conns, nChannels=%d)",
-         comm->nRanks, maxCh, numConns, comm->nChannels);
   }
 exit:
   return ret;

@@ -99,6 +99,41 @@ static void load_algos_once(void) {
     fprintf(stderr, "[msccl_preload] loaded %d algo(s)\n", g_nalgos);
 }
 
+/* Inspect loaded algo descriptors and set NCCL_MSCCL_MAX_CHANNELS to the max
+ * nChannels actually used by any algo. ncclTransportMscclConnect (called from
+ * ncclCommInitRankConfig) does an O(nRanks × maxChannels × numConns) all-to-all
+ * P2P setup at init time, defaulting to 16 channels — wildly more than any
+ * shipped algo needs. Setting this env var down to the real value drops init
+ * cost by up to 16× and is what unblocks runs at nRanks > 64.
+ *
+ * NCCL_PARAM caches the value on first read inside libnccl, so this must run
+ * BEFORE the real ncclCommInitRank* is called. Uses setenv overwrite=0 so a
+ * user-provided NCCL_MSCCL_MAX_CHANNELS still wins. */
+static void apply_adaptive_msccl_env(void) {
+    if (g_nalgos <= 0) return;
+    int maxCh = 0;
+    for (int i = 0; i < g_nalgos; i++) {
+        const struct mscclAlgoDescriptor *d = g_algos[i].desc;
+        if (!d || !d->algos || d->nranks <= 0) continue;
+        /* All ranks in a given IR share the same nChannels (codegen emits the
+         * XML root's nchannels attribute into every per-rank entry). Scanning
+         * rank 0 is sufficient; scan all anyway for robustness. */
+        for (int r = 0; r < d->nranks; r++) {
+            int c = d->algos[r].nChannels;
+            if (c > maxCh) maxCh = c;
+        }
+    }
+    if (maxCh <= 0) return;
+    char val[32];
+    snprintf(val, sizeof(val), "%d", maxCh);
+    if (setenv("NCCL_MSCCL_MAX_CHANNELS", val, 0) == 0) {
+        const char *eff = getenv("NCCL_MSCCL_MAX_CHANNELS");
+        fprintf(stderr,
+                "[msccl_preload] adaptive NCCL_MSCCL_MAX_CHANNELS: algo-max=%d, effective=%s\n",
+                maxCh, eff ? eff : "(unset)");
+    }
+}
+
 /* ── per-comm lazy registration ─────────────────────────────────────────── */
 
 #include <set>
@@ -162,6 +197,8 @@ ncclResult_t ncclCommInitRank(ncclComm_t *comm, int nranks,
     static fn_t real_fn = NULL;
     if (!real_fn)
         real_fn = (fn_t)dlsym(RTLD_NEXT, "ncclCommInitRank");
+    load_algos_once();
+    apply_adaptive_msccl_env();
     return real_fn(comm, nranks, id, rank);
 }
 
@@ -172,6 +209,8 @@ ncclResult_t ncclCommInitRankConfig(ncclComm_t *comm, int nranks,
     static fn_t real_fn = NULL;
     if (!real_fn)
         real_fn = (fn_t)dlsym(RTLD_NEXT, "ncclCommInitRankConfig");
+    load_algos_once();
+    apply_adaptive_msccl_env();
     return real_fn(comm, nranks, id, rank, config);
 }
 
@@ -180,6 +219,8 @@ ncclResult_t ncclCommInitAll(ncclComm_t *comms, int ndev, const int *devlist) {
     static fn_t real_fn = NULL;
     if (!real_fn)
         real_fn = (fn_t)dlsym(RTLD_NEXT, "ncclCommInitAll");
+    load_algos_once();
+    apply_adaptive_msccl_env();
     return real_fn(comms, ndev, devlist);
 }
 

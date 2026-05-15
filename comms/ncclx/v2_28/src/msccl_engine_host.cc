@@ -11,6 +11,7 @@
 #include "msccl_engine_host.h"
 
 #include <cstring>         /* memcpy */
+#include <vector>
 
 /* ── redOpArg ──────────────────────────────────────────────────────────── */
 static ncclResult_t mscclGetRedOpArg(ncclRedOp_t op, ncclDataType_t dt,
@@ -226,17 +227,20 @@ ncclResult_t ncclMscclEngineAddAlgo(ncclComm_t comm,
     struct mscclEngineAlgo algoCopy;
     memcpy(&algoCopy, myAlgo, sizeof(algoCopy));
 
-    int nextRecvCi[MSCCL_ENGINE_MAX_TBS][MSCCL_ENGINE_MAX_TBS] = {{0}};
-    int nextSendCi[MSCCL_ENGINE_MAX_TBS][MSCCL_ENGINE_MAX_TBS] = {{0}};
-    /* nextXxxCi[channelId][peer] = next free connIndex for that bucket.
-     * channelId is bounded by maxChanId <= MSCCL_ENGINE_MAX_TBS in practice;
-     * peer < comm->nRanks <= MSCCL_ENGINE_MAX_TBS for currently-shipped algos.
-     * If either grows past MSCCL_ENGINE_MAX_TBS we need to switch to a hash. */
+    /* nextXxxCi[channelId * nRanks + peer] = next free connIndex for that
+     * bucket. channelId is bounded by MSCCL_ENGINE_MAX_TBS; peer by
+     * comm->nRanks. Previously this was a [MSCCL_ENGINE_MAX_TBS][MSCCL_ENGINE_MAX_TBS]
+     * stack array, which silently overflowed when nRanks > 64 (recvPeer could
+     * be 64..nRanks-1 while the second dim was only 64). Now heap-allocated
+     * and sized correctly by nRanks. */
     if (myAlgo->nBlocks > MSCCL_ENGINE_MAX_TBS) {
       WARN("MSCCL algo nBlocks=%d exceeds MSCCL_ENGINE_MAX_TBS=%d",
            myAlgo->nBlocks, MSCCL_ENGINE_MAX_TBS);
       return ncclInvalidArgument;
     }
+    const int ciRanks = comm->nRanks;
+    std::vector<int> nextRecvCi((size_t)MSCCL_ENGINE_MAX_TBS * ciRanks, 0);
+    std::vector<int> nextSendCi((size_t)MSCCL_ENGINE_MAX_TBS * ciRanks, 0);
 
     int maxConnSeen = 0;
     for (int b = 0; b < myAlgo->nBlocks; b++) {
@@ -272,7 +276,7 @@ ncclResult_t ncclMscclEngineAddAlgo(ncclComm_t comm,
       }
 
       if (usesRecv && src->recvPeer >= 0) {
-        int *cnt = &nextRecvCi[ch][src->recvPeer];
+        int *cnt = &nextRecvCi[(size_t)ch * ciRanks + src->recvPeer];
         if (*cnt >= NCCL_MAX_CONNS) {
           WARN("MSCCL algo: too many TBs share (ch=%d, recvPeer=%d): need >%d "
                "connection slots but NCCL_MAX_CONNS=%d. Reduce TB sharing in "
@@ -287,7 +291,7 @@ ncclResult_t ncclMscclEngineAddAlgo(ncclComm_t comm,
         dst->connIndexRecv = 0;
       }
       if (usesSend && src->sendPeer >= 0) {
-        int *cnt = &nextSendCi[ch][src->sendPeer];
+        int *cnt = &nextSendCi[(size_t)ch * ciRanks + src->sendPeer];
         if (*cnt >= NCCL_MAX_CONNS) {
           WARN("MSCCL algo: too many TBs share (ch=%d, sendPeer=%d): need >%d "
                "connection slots but NCCL_MAX_CONNS=%d.",
