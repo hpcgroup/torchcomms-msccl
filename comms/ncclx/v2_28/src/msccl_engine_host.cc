@@ -89,7 +89,7 @@ static int mscclProtocolChunkSizeBytes(const struct ncclComm *comm, int protocol
 /* ── scratch/flag helpers ───────────────────────────────────────────────── */
 static ncclResult_t ensureScratch(struct mscclEngineState *s, size_t bytes) {
   if (bytes <= s->scratchBytes) return ncclSuccess;
-  if (s->devScratch) CUDACHECK(cudaFree(s->devScratch));
+  if (s->devScratch) NCCLCHECK(ncclCudaFree(s->devScratch));
   s->devScratch   = nullptr;
   s->scratchBytes = 0;
   NCCLCHECK(ncclCudaCalloc((char **)&s->devScratch, bytes));
@@ -99,7 +99,7 @@ static ncclResult_t ensureScratch(struct mscclEngineState *s, size_t bytes) {
 
 static ncclResult_t ensureSyncFlags(struct mscclEngineState *s, int nBlocks) {
   if (nBlocks <= s->maxNBlocks) return ncclSuccess;
-  if (s->devSyncFlags) CUDACHECK(cudaFree(s->devSyncFlags));
+  if (s->devSyncFlags) NCCLCHECK(ncclCudaFree(s->devSyncFlags));
   s->devSyncFlags = nullptr;
   s->maxNBlocks   = 0;
   NCCLCHECK(ncclCudaCalloc(&s->devSyncFlags, nBlocks));
