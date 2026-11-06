@@ -114,6 +114,9 @@ NCCL_PARAM(MscclMaxChannels, "MSCCL_MAX_CHANNELS", 16);
 // hard cap and unblocks all currently-shipped MSCCL algos at the cost of
 // allocating an extra (often unused) FIFO per pair.
 NCCL_PARAM(MscclNumConnsPerPeer, "MSCCL_NUM_CONNS_PER_PEER", 2);
+// 1: MSCCL NET connections use each GPU's own closest NIC. 0: use the NIC the
+// ring graph assigns to the channel (previous behavior).
+NCCL_PARAM(MscclNetLocalNic, "MSCCL_NET_LOCAL_NIC", 1);
 
 /* Sparse used-peer set computed by dlopening MSCCL_ALGO_PATH .so's at
  * MsccConnect time and walking algos[myRank].mscclTBs. Avoids the
@@ -233,8 +236,18 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
      * incompatible with our raw per-conn FIFO usage and segfaults the proxy
      * progress thread on the first cross-node op. With graph non-null, the
      * `graph || connIndex == 0` guard short-circuits and shared=0 for every
-     * connIndex, making slot 1 behave identically to slot 0. */
+     * connIndex, making slot 1 behave identically to slot 0.
+     *
+     * Side effect of passing the graph: ncclTopoGetNetDev then picks the NIC
+     * from graph->inter[] by channel, not by GPU, so every local GPU sending
+     * on the same MSCCL channel shares one NIC, usually not its own.
+     * mscclNetLocalNic makes net.cc pick the GPU's own closest NIC (no PXN)
+     * instead, as plain p2p would. NCCL_MSCCL_NET_LOCAL_NIC=0 restores the
+     * old channel-based NIC choice. */
     struct ncclTopoGraph* graph = &comm->graphs[NCCL_ALGO_RING];
+    comm->mscclNetLocalNic = ncclParamMscclNetLocalNic() != 0;
+    INFO(NCCL_INIT|NCCL_NET, "MSCCL connect: rank=%d NET NIC selection=%s",
+         comm->rank, comm->mscclNetLocalNic ? "per-GPU local NIC" : "ring-graph channel NIC");
     if (used.valid) {
       /* Accumulate intra/inter-node tallies via connectionSummary so we can
        * report per-rank net-fanout at INFO level. The per-(channel,peer,dir)
@@ -301,6 +314,7 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
     }
   }
 exit:
+  if (comm) comm->mscclNetLocalNic = false;
   return ret;
 fail:
   goto exit;
