@@ -720,6 +720,10 @@ struct ncclComm {
   int symmetricSupport;
   bool useNetPXN;
   bool useGdr;
+  // True only while ncclTransportMscclConnect sets up connections: NET
+  // send/recv then use the GPU's own closest NIC instead of the NIC the
+  // ring graph assigns to the channel (see transport/generic.cc).
+  bool mscclNetLocalNic;
   int splitCount;
 
   struct ncclDevrState devrState; // The symmetric runtime state
