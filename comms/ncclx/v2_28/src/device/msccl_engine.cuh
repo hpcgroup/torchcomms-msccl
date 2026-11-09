@@ -32,19 +32,23 @@
 #include "collectives.h"  /* reduce_kernel helpers (BytePack, applyReduce, …) */
 #include "include/msccl_engine.h"
 
-#define MSCCL_ENGINE_MAX_ITER 65536
+/* MSCCL_ENGINE_MAX_ITER (flag sub-iteration budget) is in include/msccl_engine.h. */
 
 /*
- * Flag = lexicographic (workIndex, iter, step) packed into a uint64.
+ * Flag = lexicographic (workIndex, subIter, step) packed into a uint64.
  * A TB is "ahead" of another iff its flag is numerically larger.
  *
- * Note: the encoding is intentionally STEP-level, not stripe-level. When
- * nStripes>1 the data work for a step is split across stripes, but the
- * cross-block dependency flag is published only after the LAST stripe
- * finishes that step (and waited on only at the FIRST stripe). This keeps
- * step-level IR dep semantics intact: a consumer waiting on (iter, step)
- * never observes a partial-step state, which would be incorrect when the
- * IR's dep edges assume the full count for a step has been committed.
+ * work.stripeFlags == 0 (NCCL_MSCCL_STRIPE_FLAGS=step, runtime_v2b): subIter = iter. When nStripes > 1
+ * the flag is published only after the LAST stripe of a step and waited on only at the FIRST stripe.
+ * A consumer that needs the producer's step at stripe 0 then waits for all of the producer's stripes,
+ * which deadlocks a send -> (dep) -> reduce -> send-back chain (R4, docs/runtime_issues).
+ *
+ * work.stripeFlags == 1 (NCCL_MSCCL_STRIPE_FLAGS=stripe, runtime_v3): subIter = iter * nStripes + stripe
+ * (stripe is more significant than step, which matches the order a TB executes in). Every stripe of a
+ * dep-source step publishes. A dependency marked MSCCL_ENGINE_DEP_ALIGNED in dependentBid is waited on
+ * at every stripe s for the producer's (iter * nStripes + s, step); the host marks a dependency only
+ * when it has proven that stripe s of the consumer needs only work the producer has finished by then.
+ * An unmarked dependency is waited on at stripe 0 for the producer's last stripe, as before.
  */
 #define MSCCL_ENGINE_FLAG(wi, iter, step) \
   ((uint64_t)(wi) * (MSCCL_ENGINE_MAX_ITER * (uint64_t)MSCCL_ENGINE_MAX_STEPS) \
@@ -253,6 +257,7 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
    * send-first deadlock. nStripes=1 is the fast path (host-side trigger
    * computes pre-recv send pressure per TB and only sets >1 when needed). */
   const int nStripes = max(1, (int)work.nStripes);
+  const bool stripeFlags = (work.stripeFlags != 0);
 
   /* ── outer loop: iterate over the full message in chunkSize pieces ─────── */
   for (ssize_t gridOff = 0, iter = 0;
@@ -276,15 +281,17 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
     const int nelem = (int)min(realChunkSize, sizePerChunk - gridOff);
 
     /* ── stripe loop: each stripe replays the IR walk on its own slice of
-     * every step's count, but cross-block dep waits and flag publishes are
-     * STEP-LEVEL (gated to first/last stripe). The intra-stripe interleave
-     * of send-then-recv-then-send-... is what breaks the symmetric send-first
-     * cycle; cross-TB ordering still observes step atomicity, matching the
-     * IR's step-level dep semantics. */
+     * every step's count. The intra-stripe interleave of send-then-recv-
+     * then-send-... is what breaks the symmetric send-first cycle. Cross-block
+     * dep waits and flag publishes: see MSCCL_ENGINE_FLAG (step or stripe
+     * flags, work.stripeFlags). */
     const int lastStripe = nStripes - 1;
     for (int stripe = 0; stripe < nStripes; stripe++) {
       const bool isFirstStripe = (stripe == 0);
       const bool isLastStripe  = (stripe == lastStripe);
+      /* Flag sub-iteration of this stripe and of this iter's last stripe (see MSCCL_ENGINE_FLAG). */
+      const int64_t subIter     = stripeFlags ? (int64_t)iter * nStripes + stripe     : (int64_t)iter;
+      const int64_t lastSubIter = stripeFlags ? (int64_t)iter * nStripes + lastStripe : (int64_t)iter;
 
       /* ── inner loop: execute each IR step. The count-split loop stays
        * inside the step, restricted to this stripe's contiguous slice. */
@@ -292,28 +299,37 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
       for (int i = 0; i < (int)sharedTB.nSteps; i++) {
         const struct mscclEngineTransmission *t = &sharedTB.transmissions[i];
 
-        /* cross-block dependency wait — only on the first stripe; consumers
-         * observe step as "done" only after the producer's full count is
-         * committed (publish at lastStripe), so once we've waited, the dep
-         * is satisfied for every stripe of this step. */
+        /* cross-block dependency wait. Step flags: only on the first stripe, for the producer's
+         * full step (published at its last stripe). Stripe flags: an aligned dependency waits at
+         * every stripe for the producer's same stripe; any other waits at stripe 0 for the
+         * producer's last stripe. */
         int16_t numDeps = t->numDependencies;
         if (numDeps > 0) {
-          if (isFirstStripe && tid < numDeps) {
-            int16_t depPtr  = t->dependencePointer;
-            int8_t  depBid  = sharedTB.dependentBid[depPtr + tid];
+          int16_t depPtr = t->dependencePointer;
+          bool anyAligned = false;   /* uniform across the block (shared memory) */
+          if (stripeFlags) {
+            for (int d = 0; d < numDeps; d++)
+              anyAligned |= (sharedTB.dependentBid[depPtr + d] & MSCCL_ENGINE_DEP_ALIGNED) != 0;
+          }
+          if (tid < numDeps) {
+            int8_t  depRaw  = sharedTB.dependentBid[depPtr + tid];
+            int8_t  depBid  = depRaw & MSCCL_ENGINE_DEP_BID_MASK;
             int16_t depStep = sharedTB.dependentStep[depPtr + tid];
-            uint64_t goal   = MSCCL_ENGINE_FLAG(workIndex, iter, depStep);
-            while (true) {
-              uint64_t cur = mscclEngineFlagLoad(mscclFlags, depBid);
-              if (cur >= goal &&
-                  MSCCL_ENGINE_WORKINDEX_FROM_FLAG(cur) == (uint64_t)workIndex)
-                break;
+            const bool aligned = stripeFlags && (depRaw & MSCCL_ENGINE_DEP_ALIGNED);
+            if (aligned || isFirstStripe) {
+              uint64_t goal = MSCCL_ENGINE_FLAG(workIndex, aligned ? subIter : lastSubIter, depStep);
+              while (true) {
+                uint64_t cur = mscclEngineFlagLoad(mscclFlags, depBid);
+                if (cur >= goal &&
+                    MSCCL_ENGINE_WORKINDEX_FROM_FLAG(cur) == (uint64_t)workIndex)
+                  break;
+              }
             }
           }
           /* step counter advance is uniform across stripes (the IR's step
            * encoding is fixed by the producer-side flag layout). */
           step += numDeps - 1;
-          if (isFirstStripe) __syncthreads();
+          if (isFirstStripe || anyAligned) __syncthreads();
         }
 
         /* buffer pointer selection */
@@ -412,14 +428,13 @@ mscclRunEngine(struct ncclKernelCommAndChannels *commAndChans,
           step += (int)t->numReductions - 1;
         }
 
-        /* Raise cross-block flag for dep-source steps — only on the LAST
-         * stripe, after the full count for this step has been processed.
-         * Consumers waiting on (iter, step) thus never observe a partial
-         * step state, preserving the IR's step-atomic dep semantics. */
-        if (isLastStripe && t->hasDependence && tid == nthreads - 1) {
+        /* Raise cross-block flag for dep-source steps. Step flags: only on the LAST stripe, after
+         * the full count for this step has been processed. Stripe flags: on every stripe, with that
+         * stripe's sub-iteration; a consumer that needs the full step waits for lastSubIter. */
+        if ((stripeFlags || isLastStripe) && t->hasDependence && tid == nthreads - 1) {
           __threadfence();
           mscclEngineFlagStore(mscclFlags, bid,
-                               MSCCL_ENGINE_FLAG(workIndex, iter, step));
+                               MSCCL_ENGINE_FLAG(workIndex, subIter, step));
         }
         step++;
       } /* for i (steps) */

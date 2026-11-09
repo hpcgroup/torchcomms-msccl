@@ -199,6 +199,7 @@ def _build_dep_tables(tbs_for_rank, max_steps):
         dep_steps = [-1] * max_steps
         red_srcs  = [0]  * max_steps
         dep_ptr   = 0   # next free slot in dep_bids/dep_steps
+        red_ptr   = 0   # next free slot in red_srcs
 
         transmissions = []
         for step in tb['steps']:
@@ -237,6 +238,18 @@ def _build_dep_tables(tbs_for_rank, max_steps):
                     'type':  step['type'],
                     'count': step['cnt'],
                 }
+            if step['type'] not in OPCODE:
+                raise ValueError(f"unknown MSCCL step type {step['type']!r} (would run as NOP)")
+            if step['type'] == 're':
+                # Local reduce dst[dstoff] op= src[srcoff]. The kernel reads the source offset from
+                # reductionSrcOffsets[reductionPointer .. +numReductions) and advances its step counter
+                # by numReductions-1, so numReductions must be 1 for one XML step (RCCL's parser
+                # merges chained `re` steps; we keep them 1:1). Before this fix numReductions was 0:
+                # the reduce was a no-op and every later flag was published one step low.
+                red_srcs[red_ptr] = step['srcoff']
+                t['reductionPointer'] = red_ptr
+                t['numReductions'] = 1
+                red_ptr += 1
             transmissions.append(t)
 
         result.append({

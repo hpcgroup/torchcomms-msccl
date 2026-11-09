@@ -65,6 +65,26 @@ struct mscclEngineSizeEntry {
    * across this many stripes per outer iter so the per-stripe-per-conn slot
    * pressure stays <= NCCL_STEPS. */
   uint16_t nStripes;
+  /* runtime_v3 (R4a/R4b). See msccl_engine_host.cc. */
+  uint8_t  stripeFlags;        /* NCCL_MSCCL_STRIPE_FLAGS: 0 step, 1 stripe, 2 auto    */
+  uint8_t  stripeCountLaunch;  /* NCCL_MSCCL_STRIPE_COUNT: 0 addalgo, 1 launch         */
+  /* R4a: nStripes for maxAllowedCount = m (index m, 1..MSCCL_ENGINE_MAX_COUNT-1), max over all ranks of
+   * the IR. 0 = more than MSCCL_ENGINE_MAX_STRIPES (the launch is rejected). */
+  uint16_t nStripesForCount[MSCCL_ENGINE_MAX_COUNT];
+  uint16_t nStripesAddAlgoMax; /* AddAlgo formula, max over all ranks (cross-check of the per-rank value) */
+  /* R4b: one device algo per distinct nStripes > 1, with MSCCL_ENGINE_DEP_ALIGNED marks for that count.
+   * Unused when stripeFlags == 0, or when no dependency is aligned (devAlgo is used then). */
+  int      nStripeVariants;
+  struct {
+    uint16_t nStripes;
+    int32_t  depsTotal, depsCandidate, depsAligned, demoted, intraHazards, unordered;
+    int32_t  skipped;            /* 1 = analysis skipped (budget/unresolved dep/cycle): all non-aligned */
+    int32_t  cycleStep, cycle;   /* flag-graph cycle with step order / with the final marks (= deadlock) */
+    struct mscclEngineAlgo *devAlgo;  /* NULL when depsAligned == 0 (use the entry's devAlgo)  */
+  } stripeVariant[MSCCL_ENGINE_MAX_STRIPES];
+  /* Once-per-size INFO log of the per-launch stripe decision. */
+  int      nLoggedSizes;
+  size_t   loggedSizes[8];
 };
 
 struct mscclEngineState {

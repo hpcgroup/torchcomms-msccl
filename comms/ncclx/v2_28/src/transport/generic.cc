@@ -117,6 +117,11 @@ NCCL_PARAM(MscclNumConnsPerPeer, "MSCCL_NUM_CONNS_PER_PEER", 2);
 // 1: MSCCL NET connections use each GPU's own closest NIC. 0: use the NIC the
 // ring graph assigns to the channel (previous behavior).
 NCCL_PARAM(MscclNetLocalNic, "MSCCL_NET_LOCAL_NIC", 1);
+// 1: with no MSCCL algo descriptor (MSCCL_ALGO_PATH unset or no algo for nRanks), still connect every
+// peer on every channel x NCCL_MSCCL_NUM_CONNS_PER_PEER slots (previous behaviour). 0 (default): skip it.
+// The all-to-all connect claims connIndex 1 with shared=0 buffers, which plain NCCL p2p (it uses
+// connIndex 1 with shared buffers) then reuses: sendrecv_perf segfaults on the first p2p op.
+NCCL_PARAM(MscclConnectAll, "MSCCL_CONNECT_ALL", 0);
 
 /* Sparse used-peer set computed by dlopening MSCCL_ALGO_PATH .so's at
  * MsccConnect time and walking algos[myRank].mscclTBs. Avoids the
@@ -299,6 +304,9 @@ ncclResult_t ncclTransportMscclConnect(struct ncclComm* comm) {
       INFO(NCCL_INIT|NCCL_NET,
            "MSCCL sparse-connect per-channel (rank=%d, ci=0):%s",
            comm->rank, chBuf);
+    } else if (ncclParamMscclConnectAll() == 0) {
+      INFO(NCCL_INIT, "MSCCL connect: rank=%d no MSCCL algo descriptor; skipping all-to-all connect "
+           "(NCCL_MSCCL_CONNECT_ALL=1 restores it)", comm->rank);
     } else {
       for (int ci = 0; ci < numConns; ci++) {
         for (int peer = 0; peer < comm->nRanks; peer++) {

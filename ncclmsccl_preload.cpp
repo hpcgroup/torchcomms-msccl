@@ -19,6 +19,22 @@
  *
  * ncclMscclEngineAddAlgo must be exported from libnccl.so (add NCCL_API
  * wrapping in msccl_engine_host.cc and rebuild once).
+ *
+ * Load failures are fatal (runtime_v3b). When MSCCL_ALGO_PATH is set and an
+ * algo cannot be loaded or registered (dlopen fails, no msccl_algo_desc, more
+ * than MAX_ALGOS entries, ncclMscclEngineAddAlgo or ncclAllReduceMsccl
+ * missing, AddAlgo returns an error, e.g. more than 64 thread blocks per
+ * rank, or no algo for the communicator's rank count), the shim prints the
+ * reason ("[msccl_preload] ERROR: ..."), then one line that starts with
+ * "[msccl_preload] FATAL:", and ends the process with _exit(99). Before v3b it
+ * printed the return code and went on, so a run could continue without the
+ * algo it was meant to time. _exit, not exit: the proxy threads of the comm
+ * are running, and atexit handlers / static destructors could hang or hide
+ * the message. MSCCL_PRELOAD_STRICT=0 restores the old behaviour.
+ * An algo built for another rank count than the communicator's is skipped
+ * (not an error), so one MSCCL_ALGO_PATH can serve communicators of several
+ * sizes; a communicator that ends with no registered algo is an error.
+ * All of this is on the first-call path; the per-call path is unchanged.
  */
 
 #ifndef _GNU_SOURCE
@@ -28,6 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "nccl.h"
 #include "include/msccl_engine.h"
 
@@ -47,6 +64,32 @@ typedef ncclResult_t (*ncclCommInitAllFn_t)(
 typedef ncclResult_t (*ncclMscclEngineAddAlgoFn_t)(
     ncclComm_t, const struct mscclEngineAlgo*, int, size_t, size_t);
 
+/* ── strict mode ────────────────────────────────────────────────────────── */
+
+#define MSCCL_PRELOAD_FATAL_EXIT 99   /* hw_bridge maps 99 to "msccl_not_loaded" */
+
+/* MSCCL_PRELOAD_STRICT: unset or anything but "0" = strict (default). */
+static int preload_strict(void) {
+    static int strict = -1;
+    if (strict < 0) {
+        const char *v = getenv("MSCCL_PRELOAD_STRICT");
+        strict = (v && v[0] == '0' && v[1] == '\0') ? 0 : 1;
+    }
+    return strict;
+}
+
+/* A load / registration failure that would leave the run without its MSCCL algo. The caller has printed
+ * the reason ("[msccl_preload] ERROR: ..."). Strict: print the FATAL line and end the process now.
+ * Not strict: return, as before v3b. */
+static void preload_failure(void) {
+    if (!preload_strict()) return;
+    fprintf(stderr, "[msccl_preload] FATAL: the MSCCL algo is not usable, so this run cannot be an MSCCL "
+                    "run; exiting with code %d (MSCCL_PRELOAD_STRICT=0 disables this check; "
+                    "NCCL_DEBUG=WARN shows the engine's reason)\n", MSCCL_PRELOAD_FATAL_EXIT);
+    fflush(stderr);
+    _exit(MSCCL_PRELOAD_FATAL_EXIT);
+}
+
 /* ── algo loading ───────────────────────────────────────────────────────── */
 
 #define MAX_ALGOS 32
@@ -54,6 +97,7 @@ typedef ncclResult_t (*ncclMscclEngineAddAlgoFn_t)(
 struct LoadedAlgo {
     void                                     *handle;
     const struct mscclAlgoDescriptor         *desc;
+    char                                      path[512];   /* for error messages */
 };
 
 static struct LoadedAlgo g_algos[MAX_ALGOS];
@@ -75,23 +119,37 @@ static void load_algos_once(void) {
     buf[sizeof(buf) - 1] = '\0';
 
     char *saveptr = NULL;
+    if (strlen(path_env) >= sizeof(buf)) {
+        fprintf(stderr, "[msccl_preload] ERROR: MSCCL_ALGO_PATH is %zu bytes, longer than the %zu-byte "
+                        "buffer; the list would be cut\n", strlen(path_env), sizeof(buf) - 1);
+        preload_failure();
+    }
+
     for (char *tok = strtok_r(buf, ":", &saveptr); tok;
               tok = strtok_r(NULL, ":", &saveptr)) {
-        if (g_nalgos >= MAX_ALGOS) break;
+        if (g_nalgos >= MAX_ALGOS) {
+            fprintf(stderr, "[msccl_preload] ERROR: MSCCL_ALGO_PATH has more than %d entries; %s and "
+                            "the entries after it are not loaded\n", MAX_ALGOS, tok);
+            preload_failure();
+            break;
+        }
         void *h = dlopen(tok, RTLD_NOW | RTLD_LOCAL);
         if (!h) {
-            fprintf(stderr, "[msccl_preload] dlopen(%s): %s\n", tok, dlerror());
+            fprintf(stderr, "[msccl_preload] ERROR: dlopen(%s): %s\n", tok, dlerror());
+            preload_failure();
             continue;
         }
         const struct mscclAlgoDescriptor *desc =
             (const struct mscclAlgoDescriptor *)dlsym(h, "msccl_algo_desc");
         if (!desc) {
-            fprintf(stderr, "[msccl_preload] %s: no msccl_algo_desc symbol\n", tok);
+            fprintf(stderr, "[msccl_preload] ERROR: %s: no msccl_algo_desc symbol\n", tok);
+            preload_failure();
             dlclose(h);
             continue;
         }
         g_algos[g_nalgos].handle = h;
         g_algos[g_nalgos].desc   = desc;
+        snprintf(g_algos[g_nalgos].path, sizeof(g_algos[g_nalgos].path), "%s", tok);
         g_nalgos++;
         fprintf(stderr, "[msccl_preload] loaded %s  nranks=%d bytes=[%zu,%zu]\n",
                 tok, desc->nranks, desc->min_bytes, desc->max_bytes);
@@ -155,9 +213,11 @@ static ncclMscclEngineAddAlgoFn_t get_add_fn(void) {
         void *h = dlopen("libnccl.so.2", RTLD_NOW | RTLD_NOLOAD);
         if (h) fn = (ncclMscclEngineAddAlgoFn_t)dlsym(h, "ncclMscclEngineAddAlgo");
     }
-    if (!fn)
-        fprintf(stderr, "[msccl_preload] ERROR: ncclMscclEngineAddAlgo not found\n");
-    else
+    if (!fn) {
+        fprintf(stderr, "[msccl_preload] ERROR: ncclMscclEngineAddAlgo not found in libnccl "
+                        "(is LD_LIBRARY_PATH the MSCCL runtime?)\n");
+        preload_failure();
+    } else
         fprintf(stderr, "[msccl_preload] ncclMscclEngineAddAlgo = %p\n", (void*)fn);
     return fn;
 }
@@ -174,14 +234,46 @@ static void ensure_algos_registered(ncclComm_t comm) {
     ncclMscclEngineAddAlgoFn_t add_fn = get_add_fn();
     if (!add_fn) return;
 
+    /* Rank count of this communicator (public API), to tell "algo for another communicator size" from
+     * a rejected algo. -1 = unknown: every algo is then tried, as before v3b. */
+    int comm_nranks = -1;
+    {
+        typedef ncclResult_t (*count_fn_t)(const ncclComm_t, int*);
+        count_fn_t count_fn = (count_fn_t)dlsym(RTLD_NEXT, "ncclCommCount");
+        if (!count_fn || count_fn(comm, &comm_nranks) != ncclSuccess) comm_nranks = -1;
+    }
+
+    int nfailed = 0, nskipped = 0;
     for (int i = 0; i < g_nalgos; i++) {
         const struct mscclAlgoDescriptor *d = g_algos[i].desc;
+        if (preload_strict() && comm_nranks > 0 && d->nranks != comm_nranks) {
+            nskipped++;
+            fprintf(stderr,
+                "[msccl_preload] skip algo[%d] %s on comm=%p: built for %d ranks, the communicator has %d\n",
+                i, g_algos[i].path, (void*)comm, d->nranks, comm_nranks);
+            continue;
+        }
         fprintf(stderr,
             "[msccl_preload] register comm=%p algo[%d] nranks=%d bytes=[%zu,%zu]\n",
             (void*)comm, i, d->nranks, d->min_bytes, d->max_bytes);
         ncclResult_t r = add_fn(comm, d->algos, d->nranks, d->min_bytes, d->max_bytes);
         fprintf(stderr, "[msccl_preload] add_algo[%d] -> %d\n", i, (int)r);
+        if (r != ncclSuccess) {
+            nfailed++;
+            fprintf(stderr,
+                "[msccl_preload] ERROR: ncclMscclEngineAddAlgo rejected algo[%d] %s (nranks=%d "
+                "bytes=[%zu,%zu]) with code %d on comm=%p\n",
+                i, g_algos[i].path, d->nranks, d->min_bytes, d->max_bytes, (int)r, (void*)comm);
+        }
     }
+    int nregistered = g_nalgos - nfailed - nskipped;
+    if (nfailed == 0 && nregistered == 0)
+        fprintf(stderr,
+            "[msccl_preload] ERROR: none of the %d loaded algo(s) is for a %d-rank communicator (comm=%p)\n",
+            g_nalgos, comm_nranks, (void*)comm);
+    if (nfailed || nregistered == 0) preload_failure();
+    fprintf(stderr, "[msccl_preload] registered %d of %d algo(s) on comm=%p (%d rejected, %d skipped)\n",
+            nregistered, g_nalgos, (void*)comm, nfailed, nskipped);
 
     std::lock_guard<std::mutex> lock(g_reg_mutex);
     g_registered_comms.insert(comm);
@@ -233,7 +325,9 @@ ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count,
     if (!msccl_fn) {
         msccl_fn = (ncclAllReduceFn_t)dlsym(RTLD_NEXT, "ncclAllReduceMsccl");
         if (!msccl_fn) {
-            fprintf(stderr, "[msccl_preload] ERROR: ncclAllReduceMsccl not found\n");
+            fprintf(stderr, "[msccl_preload] ERROR: ncclAllReduceMsccl not found in libnccl "
+                            "(is LD_LIBRARY_PATH the MSCCL runtime?)\n");
+            preload_failure();
             return ncclInternalError;
         }
         fprintf(stderr, "[msccl_preload] ncclAllReduce -> ncclAllReduceMsccl (fn=%p)\n",

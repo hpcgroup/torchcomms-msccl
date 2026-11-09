@@ -2871,3 +2871,57 @@ cvars:
      multiple thread blocks to the same (channel, peer, dir) need >1 so each
      TB owns its own FIFO. Hard-capped by NCCL_MAX_CONNS (=2). Default 2
      covers all currently-shipped MSCCL algos.
+
+ - name        : NCCL_MSCCL_NET_LOCAL_NIC
+   type        : int
+   default     : 1
+   description : |
+     1 = MSCCL NET connections use each GPU's own closest NIC (ncclTopoGetLocalNet,
+     no PXN). 0 = use the NIC the ring graph assigns to the channel (behaviour
+     before ffe26ec). Read by ncclTransportMscclConnect (transport/generic.cc).
+
+ - name        : NCCL_MSCCL_CONNECT_ALL
+   type        : int
+   default     : 0
+   description : |
+     1 = when no MSCCL algo descriptor is available at init (MSCCL_ALGO_PATH unset), connect every peer on
+     every channel and connection slot anyway (behaviour before this change). 0 = skip; plain NCCL then
+     sets up its own connections, and p2p (sendrecv) works.
+
+ - name        : NCCL_MSCCL_MAX_STRIPES
+   type        : int
+   default     : 64
+   description : |
+     Diagnostic cap on the MSCCL engine's FIFO stripe count (default 64 = MSCCL_ENGINE_MAX_STRIPES, no
+     change). 1 disables striping.
+
+ - name        : NCCL_MSCCL_STRIPE_FLAGS
+   type        : string
+   default     : "auto"
+   description : |
+     MSCCL engine cross-block dependency flags when nStripes > 1 (runtime_v3, R4b). step = flags per
+     (iter, step), waited at stripe 0 and published at the last stripe (runtime_v2b behaviour).
+     stripe = flags per (iter * nStripes + stripe, step), published every stripe; dependencies the host
+     proves aligned wait per stripe, the others wait at stripe 0 for the producer's last stripe.
+     auto (default) = per nStripes, stripe flags only where step flags deadlock (the step-order flag graph
+     has a cycle) and the aligned marks remove the cycle; step flags everywhere else.
+     Read once per process by ncclMscclEngineAddAlgo (msccl_engine_host.cc).
+
+ - name        : NCCL_MSCCL_STRIPE_COUNT
+   type        : string
+   default     : "launch"
+   description : |
+     How the MSCCL engine picks nStripes (runtime_v3, R4a). addalgo = once at AddAlgo from this rank's
+     algo, pressure = count * chunkSteps (runtime_v2b behaviour). launch = per launch from the merged-call
+     pressure DIVUP(count, maxAllowedCount) * chunkSteps, max over all ranks of the IR.
+     Read once per process by ncclMscclEngineAddAlgo (msccl_engine_host.cc).
+
+ - name        : NCCL_MSCCL_SIZE_FALLBACK
+   type        : int
+   default     : 0
+   description : |
+     What ncclAllReduceMsccl does when no registered MSCCL algo entry has a [minBytes, maxBytes] range that
+     holds the message size (runtime_v3b). 0 (default) = reject the call with a WARN that names the size
+     and the registered entries. 1 = behaviour before runtime_v3b: run the entry with the smallest
+     maxBytes >= size, else the last entry, i.e. a schedule built for another size (a WARN says so).
+     Read on the unmatched path only (msccl_engine_host.cc).

@@ -36,10 +36,24 @@
  * (both ranks queueing more sends than the FIFO holds before either reaches
  * its recv step). 64 covers count up to MSCCL_ENGINE_MAX_COUNT=72 with
  * Simple's chunkSteps=4 (worst case nStripes = ceil(72*4/NCCL_STEPS=8) = 36).
- * Cross-block dep flags remain step-level (see MSCCL_ENGINE_FLAG in
- * msccl_engine.cuh): consumers see a step as "done" only after the producer's
- * last stripe finishes, preserving the IR's step-atomic dep semantics. */
+ * Cross-block dependency flags: see MSCCL_ENGINE_FLAG in msccl_engine.cuh and
+ * NCCL_MSCCL_STRIPE_FLAGS (step = flags per (iter, step), waited at stripe 0
+ * and published at the last stripe; stripe = flags per (iter*nStripes+stripe,
+ * step), waited per stripe for dependencies marked MSCCL_ENGINE_DEP_ALIGNED). */
 #define MSCCL_ENGINE_MAX_STRIPES     64
+
+/* Flag sub-iteration budget. Flag = workIndex * (MAX_ITER * MAX_STEPS) + subIter * MAX_STEPS + step,
+ * with subIter = iter (stripe flags off) or iter * nStripes + stripe (stripe flags on). workIndex is a
+ * uint32_t, so wi * 2^22 * 2^9 = wi * 2^31 < 2^63 fits a uint64_t. The host rejects a launch whose
+ * outerIters * nStripes exceeds this (runtime_v2b used 65536 = 2^16; LL at 1 GiB with nChunksPerLoop 1
+ * already reaches 65536 iterations, so stripes on top of it would overflow into the workIndex field). */
+#define MSCCL_ENGINE_MAX_ITER        (1u << 22)
+
+/* dependentBid[] holds a block index < MSCCL_ENGINE_MAX_TBS (64), so bit 6 is free. With stripe flags
+ * on, the host sets it on dependencies whose consumer may wait per stripe (see msccl_engine_host.cc,
+ * mscclStripeAnalyze). The kernel masks it off before using the block index. */
+#define MSCCL_ENGINE_DEP_BID_MASK    0x3f
+#define MSCCL_ENGINE_DEP_ALIGNED     0x40
 
 #define MSCCL_ENGINE_SLICESTEPS      2     /* NCCL_STEPS/4 = 8/4 */
 #define MSCCL_ENGINE_CHUNKSTEPS      4     /* NCCL_STEPS/2 = 8/2 */
@@ -143,13 +157,17 @@ struct alignas(16) mscclEngineWork {
   uint32_t    maxAllowedCount;
   int         nChunksPerLoop;
   /* Number of FIFO-stripes per outer iteration (>=1). Each stripe processes
-   * a contiguous slice of every IR step's count. Computed at AddAlgo time so
-   * peer ranks agree (the IR is symmetric so rank-local analysis suffices).
-   * 1 = today's behavior (no striping). */
+   * a contiguous slice of every IR step's count. Chosen per launch by the host
+   * (NCCL_MSCCL_STRIPE_COUNT): addalgo = this rank's AddAlgo-time value
+   * (runtime_v2b); launch = from the merged-call pressure at this launch's
+   * maxAllowedCount, max over all ranks of the IR, so peers always agree.
+   * 1 = no striping. */
   uint16_t    nStripes;
   int8_t      hasReduce;
   int8_t      redOpArgIsPtr;
-  uint8_t     _pad[4];
+  /* 0 = step-level flags (runtime_v2b); 1 = per-stripe flags (NCCL_MSCCL_STRIPE_FLAGS=stripe). */
+  uint8_t     stripeFlags;
+  uint8_t     _pad[3];
 };
 static_assert(sizeof(struct mscclEngineWork) % 16 == 0,
               "mscclEngineWork must be 16-byte aligned");
